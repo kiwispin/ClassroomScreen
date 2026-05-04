@@ -1,0 +1,100 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import {
+  AppState,
+  DEFAULT_SCREEN,
+  SCHEMA_VERSION,
+  WidgetType,
+} from './types';
+import { newId } from '../lib/uuid';
+
+type Actions = {
+  addWidget: (type: WidgetType) => void;
+  removeWidget: (id: string) => void;
+  updateWidgetPosition: (id: string, x: number, y: number) => void;
+  updateWidgetSize: (id: string, width: number, height: number) => void;
+  focusWidget: (id: string) => void;
+};
+
+const initialState: AppState = {
+  schemaVersion: SCHEMA_VERSION,
+  current: DEFAULT_SCREEN,
+  presets: [],
+  activePresetId: null,
+  annotateOpen: false,
+  toolbarPinned: false,
+};
+
+const nextZIndex = (widgets: { zIndex: number }[]): number =>
+  widgets.length === 0 ? 1 : Math.max(...widgets.map((w) => w.zIndex)) + 1;
+
+export const useAppStore = create<AppState & Actions>()(
+  persist(
+    (set) => ({
+      ...initialState,
+
+      addWidget: (type) =>
+        set((s) => ({
+          current: {
+            ...s.current,
+            widgets: [
+              ...s.current.widgets,
+              {
+                id: newId(),
+                type,
+                position: { x: 80, y: 80 },
+                size: { width: 240, height: 160 },
+                zIndex: nextZIndex(s.current.widgets),
+                config: {},
+              },
+            ],
+          },
+        })),
+
+      removeWidget: (id) =>
+        set((s) => ({
+          current: {
+            ...s.current,
+            widgets: s.current.widgets.filter((w) => w.id !== id),
+          },
+        })),
+
+      updateWidgetPosition: (id, x, y) =>
+        set((s) => ({
+          current: {
+            ...s.current,
+            widgets: s.current.widgets.map((w) =>
+              w.id === id ? { ...w, position: { x, y } } : w,
+            ),
+          },
+        })),
+
+      updateWidgetSize: (id, width, height) =>
+        set((s) => ({
+          current: {
+            ...s.current,
+            widgets: s.current.widgets.map((w) =>
+              w.id === id ? { ...w, size: { width, height } } : w,
+            ),
+          },
+        })),
+
+      focusWidget: (id) =>
+        set((s) => {
+          const top = nextZIndex(s.current.widgets);
+          return {
+            current: {
+              ...s.current,
+              widgets: s.current.widgets.map((w) =>
+                w.id === id ? { ...w, zIndex: top } : w,
+              ),
+            },
+          };
+        }),
+    }),
+    {
+      name: 'classroomscreen-state',
+      version: SCHEMA_VERSION,
+    },
+  ),
+);
