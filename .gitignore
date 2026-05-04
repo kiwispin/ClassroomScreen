@@ -3,6 +3,7 @@ dist/
 .DS_Store
 .superpowers/
 .npm-cache/
+*.tsbuildinfo
 *.local
 .env
 .env.local
