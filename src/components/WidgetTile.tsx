@@ -10,31 +10,32 @@ export default function WidgetTile({ instance }: { instance: WidgetInstance }) {
 
   if (!Component || !meta) {
     return (
-      <div className="h-full w-full bg-red-100 text-red-700 text-xs p-2">
+      <div className="h-full w-full bg-red-100 text-red-700 text-xs p-2 rounded-xl">
         Unknown widget: {instance.type}
       </div>
     );
   }
 
-  let header: ReactNode = null;
+  let settingsBtn: ReactNode = null;
   if (meta.Settings) {
     const Settings = meta.Settings;
-    header = <Settings instance={instance} />;
+    settingsBtn = <Settings instance={instance} />;
   }
 
   return (
-    <div className="h-full w-full flex flex-col rounded-lg shadow bg-white overflow-hidden group relative">
-      <div className="absolute top-0 left-0 right-0 h-7 px-2 flex items-center justify-between bg-slate-50/95 text-slate-600 text-xs opacity-0 group-hover:opacity-100 transition-opacity drag-handle cursor-move z-10">
-        <span>{meta.label}</span>
-        <div className="flex items-center gap-1">
-          {header}
+    <div className="h-full w-full flex flex-col rounded-xl shadow-md ring-1 ring-slate-200/70 bg-white overflow-hidden group relative">
+      <div className="absolute top-0 left-0 right-0 h-7 px-2 flex items-center justify-between bg-gradient-to-b from-white/95 to-white/70 backdrop-blur text-slate-500 text-[11px] opacity-0 group-hover:opacity-100 transition-opacity drag-handle cursor-move z-10 select-none">
+        <span className="font-medium tracking-wide uppercase">{meta.label}</span>
+        <div className="flex items-center gap-0.5">
+          {settingsBtn}
           <button
             onClick={(e) => {
               e.stopPropagation();
               removeWidget(instance.id);
             }}
-            className="h-5 w-5 rounded hover:bg-slate-200 flex items-center justify-center"
+            className="h-6 w-6 rounded-md hover:bg-slate-200/70 flex items-center justify-center text-slate-500 hover:text-slate-800"
             aria-label={`Remove ${meta.label}`}
+            title="Remove"
           >
             ×
           </button>
