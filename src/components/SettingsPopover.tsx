@@ -6,7 +6,10 @@ type Props = {
   children: (close: () => void) => ReactNode;
 };
 
-type Coords = { top: number; right: number } | null;
+type Coords =
+  | { right: number; top: number; bottom?: undefined }
+  | { right: number; bottom: number; top?: undefined }
+  | null;
 
 export default function SettingsPopover({ trigger, children }: Props) {
   const [open, setOpen] = useState(false);
@@ -19,10 +22,15 @@ export default function SettingsPopover({ trigger, children }: Props) {
     if (!wrapper) return;
     const target = (wrapper.firstElementChild as HTMLElement | null) ?? wrapper;
     const rect = target.getBoundingClientRect();
-    setCoords({
-      top: Math.round(rect.bottom + 4),
-      right: Math.round(window.innerWidth - rect.right),
-    });
+    const right = Math.round(window.innerWidth - rect.right);
+    // Flip upward when the trigger is in the lower half of the viewport,
+    // so the popover doesn't open off the bottom of the screen.
+    const openAbove = rect.top > window.innerHeight / 2;
+    if (openAbove) {
+      setCoords({ right, bottom: Math.round(window.innerHeight - rect.top + 4) });
+    } else {
+      setCoords({ right, top: Math.round(rect.bottom + 4) });
+    }
   };
 
   const handleOpen = () => {
@@ -56,9 +64,10 @@ export default function SettingsPopover({ trigger, children }: Props) {
       {open && coords && createPortal(
         <div
           ref={popRef}
-          className="fixed z-[400] min-w-56 max-w-[calc(100vw-16px)] rounded-lg shadow-lg border border-slate-200 bg-white p-3 text-sm text-slate-700"
+          className="fixed z-[400] min-w-56 max-w-[calc(100vw-16px)] max-h-[calc(100vh-16px)] overflow-auto rounded-lg shadow-lg border border-slate-200 bg-white p-3 text-sm text-slate-700"
           style={{
             top: coords.top,
+            bottom: coords.bottom,
             right: Math.max(8, coords.right),
           }}
           onMouseDown={(e) => e.stopPropagation()}
