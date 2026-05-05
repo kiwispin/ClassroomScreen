@@ -10,7 +10,7 @@ export default function Toolbar() {
   const toggleAnnotate = useAppStore((s) => s.toggleAnnotate);
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[300] flex justify-center pt-3 pointer-events-none">
+    <div className="fixed bottom-0 left-0 right-0 z-[300] flex justify-center pb-3 pointer-events-none">
       <div className="pointer-events-auto rounded-2xl shadow-lg border border-slate-200 bg-white/95 backdrop-blur px-2 py-1.5 flex items-center gap-1 max-w-[calc(100vw-24px)] overflow-x-auto">
         {allWidgets.map((w) => (
           <ToolButton

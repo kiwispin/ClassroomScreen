@@ -15,7 +15,7 @@ type Props = {
 
 export default function AnnotateToolBar(p: Props) {
   return (
-    <div className="fixed left-1/2 -translate-x-1/2 bottom-4 z-[210] bg-white/95 backdrop-blur rounded-full shadow-lg border border-slate-200 px-3 py-2 flex items-center gap-2">
+    <div className="fixed left-1/2 -translate-x-1/2 bottom-24 z-[210] bg-white/95 backdrop-blur rounded-full shadow-lg border border-slate-200 px-3 py-2 flex items-center gap-2">
       <button
         onClick={() => p.setTool('pen')}
         className={
