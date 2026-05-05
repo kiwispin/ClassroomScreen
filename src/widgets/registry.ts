@@ -35,7 +35,8 @@ const registry: Partial<Record<WidgetType, Entry>> = {
 
 export const allWidgets: WidgetMeta[] = Object.values(registry)
   .filter((e): e is Entry => Boolean(e))
-  .map((e) => e.meta);
+  .map((e) => e.meta)
+  .filter((m) => !m.hidden);
 
 export const getWidgetMeta = (type: WidgetType): WidgetMeta | undefined =>
   registry[type]?.meta;

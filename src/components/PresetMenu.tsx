@@ -2,6 +2,7 @@ import { useState } from 'react';
 import SettingsPopover from './SettingsPopover';
 import NamePromptDialog from './NamePromptDialog';
 import ConfirmDialog from './ConfirmDialog';
+import ToolButton from './ToolButton';
 import { useAppStore } from '../store/store';
 
 type Mode =
@@ -28,13 +29,13 @@ export default function PresetMenu() {
     <>
       <SettingsPopover
         trigger={(open) => (
-          <button
+          <ToolButton
+            icon="📁"
+            label={activeName ?? 'presets'}
+            title={activeName ? `Preset: ${activeName}` : 'Presets'}
+            active={Boolean(activeName)}
             onClick={open}
-            className="h-9 px-3 rounded hover:bg-slate-100 text-sm flex items-center gap-1"
-            title="Presets"
-          >
-            📁 <span>{activeName ? `Preset: ${activeName}` : 'Presets'}</span>
-          </button>
+          />
         )}
       >
         {(closePopover) => (

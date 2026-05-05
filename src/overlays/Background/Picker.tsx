@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import SettingsPopover from '../../components/SettingsPopover';
+import ToolButton from '../../components/ToolButton';
 import { useAppStore } from '../../store/store';
 import { putImage, deleteImage } from './idb';
 import { resizeImage } from './resize';
@@ -34,13 +35,12 @@ export default function BackgroundPicker() {
   return (
     <SettingsPopover
       trigger={(open) => (
-        <button
-          onClick={open}
-          className="h-9 px-3 rounded hover:bg-slate-100 text-sm flex items-center gap-1"
+        <ToolButton
+          icon="🖌️"
+          label="background"
           title="Background"
-        >
-          🖌️ <span>Background</span>
-        </button>
+          onClick={open}
+        />
       )}
     >
       {() => (

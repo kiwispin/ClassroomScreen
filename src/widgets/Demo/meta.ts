@@ -10,6 +10,7 @@ export type WidgetMeta = {
   defaultSize: { width: number; height: number };
   defaultConfig: Record<string, unknown>;
   Settings?: ComponentType<WidgetSettingsProps>;
+  hidden?: boolean;
 };
 
 export const demoMeta: WidgetMeta = {
@@ -18,4 +19,5 @@ export const demoMeta: WidgetMeta = {
   icon: '🧪',
   defaultSize: { width: 240, height: 160 },
   defaultConfig: {},
+  hidden: true,
 };
