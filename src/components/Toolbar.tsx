@@ -5,7 +5,9 @@ import PresetMenu from './PresetMenu';
 import ToolButton from './ToolButton';
 import { useFullscreen } from '../lib/useFullscreen';
 
-export default function Toolbar() {
+type Props = { onOpenHelp: () => void };
+
+export default function Toolbar({ onOpenHelp }: Props) {
   const addWidget = useAppStore((s) => s.addWidget);
   const annotateOpen = useAppStore((s) => s.annotateOpen);
   const toggleAnnotate = useAppStore((s) => s.toggleAnnotate);
@@ -37,6 +39,12 @@ export default function Toolbar() {
           title={isFs ? 'Exit fullscreen (F)' : 'Enter fullscreen (F)'}
           active={isFs}
           onClick={toggleFs}
+        />
+        <ToolButton
+          icon="?"
+          label="help"
+          title="Keyboard shortcuts (?)"
+          onClick={onOpenHelp}
         />
         <div className="shrink-0 w-px h-10 bg-slate-200 mx-0.5" />
         <PresetMenu />
