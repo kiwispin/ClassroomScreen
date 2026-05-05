@@ -2,14 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import type { WidgetInstance } from '../../store/types';
 import { useAppStore } from '../../store/store';
 import { playSfx, type SfxName } from '../../lib/audio';
+import { playCustomAudio } from '../../lib/audio-storage';
 import { formatMmss, remainingMs, type TimerState } from './logic';
+
+export type TimerSfx = SfxName | 'custom';
 
 export type TimerConfig = {
   durationMs?: number;
   fullDurationMs?: number;
   running?: boolean;
   startedAt?: number | null;
-  sfx?: SfxName;
+  sfx?: TimerSfx;
+  customSoundId?: string;
+  customSoundName?: string;
   autoReset?: boolean;
 };
 
@@ -20,7 +25,8 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
   const durationMs = cfg.durationMs ?? 5 * 60_000;
   const running = cfg.running ?? false;
   const startedAt = cfg.startedAt ?? null;
-  const sfx = cfg.sfx ?? 'bell';
+  const sfx: TimerSfx = cfg.sfx ?? 'bell';
+  const customSoundId = cfg.customSoundId;
   const autoReset = cfg.autoReset ?? false;
 
   const state: TimerState = { running, durationMs, startedAt };
@@ -39,7 +45,11 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
   useEffect(() => {
     if (running && atZero && !firedRef.current) {
       firedRef.current = true;
-      playSfx(sfx);
+      if (sfx === 'custom' && customSoundId) {
+        playCustomAudio(customSoundId);
+      } else if (sfx !== 'custom') {
+        playSfx(sfx);
+      }
       if (autoReset) {
         updateConfig(instance.id, {
           running: false,
@@ -55,7 +65,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
       }
     }
     if (!running || !atZero) firedRef.current = false;
-  }, [running, atZero, sfx, autoReset, instance.id, updateConfig, cfg.fullDurationMs, cfg.durationMs]);
+  }, [running, atZero, sfx, customSoundId, autoReset, instance.id, updateConfig, cfg.fullDurationMs, cfg.durationMs]);
 
   const start = () => {
     if (running) return;
