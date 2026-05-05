@@ -15,6 +15,8 @@ import NamePicker from './NamePicker';
 import { namePickerMeta } from './NamePicker/meta';
 import Dice from './Dice';
 import { diceMeta } from './Dice/meta';
+import TrafficLight from './TrafficLight';
+import { trafficLightMeta } from './TrafficLight/meta';
 
 export type WidgetProps = { instance: WidgetInstance };
 
@@ -31,6 +33,7 @@ const registry: Partial<Record<WidgetType, Entry>> = {
   stopwatch: { meta: stopwatchMeta, Component: Stopwatch },
   namepicker: { meta: namePickerMeta, Component: NamePicker },
   dice: { meta: diceMeta, Component: Dice },
+  trafficlight: { meta: trafficLightMeta, Component: TrafficLight },
 };
 
 export const allWidgets: WidgetMeta[] = Object.values(registry)
