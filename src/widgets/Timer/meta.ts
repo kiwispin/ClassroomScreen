@@ -6,7 +6,7 @@ export const timerMeta: WidgetMeta = {
   type: 'timer',
   label: 'Timer',
   Icon: Timer,
-  defaultSize: { width: 280, height: 180 },
+  defaultSize: { width: 480, height: 200 },
   defaultConfig: {
     durationMs: 5 * 60_000,
     fullDurationMs: 5 * 60_000,

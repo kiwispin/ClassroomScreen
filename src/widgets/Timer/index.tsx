@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { Play, Pause, Square, Plus, Minus } from 'lucide-react';
 import type { WidgetInstance } from '../../store/types';
 import { useAppStore } from '../../store/store';
 import { playSfx, type SfxName } from '../../lib/audio';
 import { playCustomAudio } from '../../lib/audio-storage';
-import { formatMmss, remainingMs, type TimerState } from './logic';
+import { remainingMs, type TimerState } from './logic';
 
 export type TimerSfx = SfxName | 'custom';
 
@@ -18,11 +19,79 @@ export type TimerConfig = {
   autoReset?: boolean;
 };
 
+const MAX_TOTAL_SECONDS = 99 * 60 + 59;
+
+const parseDigits = (ms: number): [number, number, number, number] => {
+  const totalSeconds = Math.min(MAX_TOTAL_SECONDS, Math.max(0, Math.floor(ms / 1000)));
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return [Math.floor(m / 10), m % 10, Math.floor(s / 10), s % 10];
+};
+
+const fromDigits = (
+  mTens: number, mOnes: number, sTens: number, sOnes: number,
+): number => ((mTens * 10 + mOnes) * 60 + sTens * 10 + sOnes) * 1000;
+
+type DigitColumnProps = {
+  value: number;
+  onAdjust: (delta: 1 | -1) => void;
+  disabled?: boolean;
+};
+
+const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
+  <div className="flex flex-col items-center justify-center select-none">
+    <button
+      onClick={() => onAdjust(1)}
+      disabled={disabled}
+      tabIndex={-1}
+      className="text-slate-400 hover:text-slate-700 disabled:opacity-0 disabled:pointer-events-none transition-colors"
+      aria-label="Increase"
+    >
+      <Plus className="w-[clamp(12px,3cqw,20px)] h-[clamp(12px,3cqw,20px)]" strokeWidth={2} />
+    </button>
+    <div className="font-bold tabular-nums text-slate-800 text-[clamp(36px,15cqw,108px)] leading-none">
+      {value}
+    </div>
+    <button
+      onClick={() => onAdjust(-1)}
+      disabled={disabled}
+      tabIndex={-1}
+      className="text-slate-400 hover:text-slate-700 disabled:opacity-0 disabled:pointer-events-none transition-colors"
+      aria-label="Decrease"
+    >
+      <Minus className="w-[clamp(12px,3cqw,20px)] h-[clamp(12px,3cqw,20px)]" strokeWidth={2} />
+    </button>
+  </div>
+);
+
+const ProgressRing = ({ fraction }: { fraction: number }) => {
+  const r = 44;
+  const c = 2 * Math.PI * r;
+  const safeFraction = Math.max(0, Math.min(1, fraction));
+  return (
+    <svg viewBox="0 0 100 100" className="w-full h-full" aria-hidden>
+      <circle cx="50" cy="50" r={r} fill="none" stroke="rgb(226 232 240)" strokeWidth="6" />
+      <circle
+        cx="50" cy="50" r={r}
+        fill="none"
+        stroke="rgb(99 102 241)"
+        strokeWidth="6"
+        strokeDasharray={c}
+        strokeDashoffset={c * (1 - safeFraction)}
+        strokeLinecap="round"
+        transform="rotate(-90 50 50)"
+        style={{ transition: 'stroke-dashoffset 200ms linear' }}
+      />
+    </svg>
+  );
+};
+
 export default function Timer({ instance }: { instance: WidgetInstance }) {
   const updateConfig = useAppStore((s) => s.updateWidgetConfig);
   const cfg = instance.config as TimerConfig;
 
-  const durationMs = cfg.durationMs ?? 5 * 60_000;
+  const fullMs = cfg.fullDurationMs ?? cfg.durationMs ?? 5 * 60_000;
+  const durationMs = cfg.durationMs ?? fullMs;
   const running = cfg.running ?? false;
   const startedAt = cfg.startedAt ?? null;
   const sfx: TimerSfx = cfg.sfx ?? 'bell';
@@ -54,7 +123,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         updateConfig(instance.id, {
           running: false,
           startedAt: null,
-          durationMs: cfg.fullDurationMs ?? cfg.durationMs ?? 5 * 60_000,
+          durationMs: fullMs,
         });
       } else {
         updateConfig(instance.id, {
@@ -65,13 +134,35 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
       }
     }
     if (!running || !atZero) firedRef.current = false;
-  }, [running, atZero, sfx, customSoundId, autoReset, instance.id, updateConfig, cfg.fullDurationMs, cfg.durationMs]);
+  }, [running, atZero, sfx, customSoundId, autoReset, instance.id, updateConfig, fullMs]);
+
+  // Digits driven by remaining time when running, otherwise by full duration
+  const displayMs = running ? remaining : durationMs;
+  const [mTens, mOnes, sTens, sOnes] = parseDigits(displayMs);
+
+  // Progress ring shows elapsed / full. Empty when fresh, full at zero.
+  const fraction = fullMs > 0 ? Math.max(0, Math.min(1, (fullMs - remaining) / fullMs)) : 0;
+
+  const adjustDigit = (idx: 0 | 1 | 2 | 3, delta: 1 | -1) => {
+    if (running) return;
+    const digits = parseDigits(fullMs);
+    const maxes = [9, 9, 5, 9];
+    const next = digits[idx] + delta;
+    if (next < 0 || next > maxes[idx]) return;
+    digits[idx] = next;
+    const newMs = fromDigits(digits[0], digits[1], digits[2], digits[3]);
+    updateConfig(instance.id, {
+      fullDurationMs: newMs,
+      durationMs: newMs,
+      running: false,
+      startedAt: null,
+    });
+  };
 
   const start = () => {
     if (running) return;
     if (remaining <= 0) {
-      const full = cfg.fullDurationMs ?? 5 * 60_000;
-      updateConfig(instance.id, { running: true, durationMs: full, startedAt: Date.now() });
+      updateConfig(instance.id, { running: true, durationMs: fullMs, startedAt: Date.now() });
     } else {
       updateConfig(instance.id, {
         running: true,
@@ -91,46 +182,64 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     updateConfig(instance.id, {
       running: false,
       startedAt: null,
-      durationMs: cfg.fullDurationMs ?? cfg.durationMs ?? 5 * 60_000,
+      durationMs: fullMs,
     });
   };
 
-  const flash = !running && remaining === 0;
+  const flash = !running && remaining === 0 && fullMs > 0;
 
   return (
     <div
-      className="h-full w-full flex flex-col items-center justify-center bg-white text-slate-800 select-none gap-2 p-2"
+      className="h-full w-full flex items-center bg-white p-3 gap-3"
       style={{ containerType: 'inline-size' as const }}
     >
+      <div className="aspect-square h-full max-w-[30%] flex items-center justify-center shrink-0">
+        <ProgressRing fraction={fraction} />
+      </div>
+
       <div
         className={
-          'font-bold tabular-nums text-[clamp(28px,18cqw,128px)] ' +
-          (flash ? 'text-red-500 animate-pulse' : '')
+          'flex-1 flex items-center justify-center gap-1 ' +
+          (flash ? 'text-rose-500 animate-pulse' : '')
         }
       >
-        {formatMmss(remaining)}
+        <DigitColumn value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
+        <DigitColumn value={mOnes} onAdjust={(d) => adjustDigit(1, d)} disabled={running} />
+        <span className="font-bold text-slate-800 text-[clamp(36px,15cqw,108px)] leading-none mx-0.5 mb-[3cqw]">
+          :
+        </span>
+        <DigitColumn value={sTens} onAdjust={(d) => adjustDigit(2, d)} disabled={running} />
+        <DigitColumn value={sOnes} onAdjust={(d) => adjustDigit(3, d)} disabled={running} />
       </div>
-      <div className="flex gap-1">
+
+      <div className="flex flex-col items-center justify-center gap-1.5 shrink-0">
         {!running ? (
           <button
             onClick={start}
-            className="px-3 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 text-sm"
+            disabled={fullMs === 0}
+            className="rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center w-[clamp(32px,11cqw,56px)] h-[clamp(32px,11cqw,56px)] shadow-sm transition-colors"
+            aria-label="Start"
+            title="Start"
           >
-            Start
+            <Play className="w-[clamp(14px,5cqw,24px)] h-[clamp(14px,5cqw,24px)] ml-0.5" fill="currentColor" />
           </button>
         ) : (
           <button
             onClick={pause}
-            className="px-3 py-1 rounded bg-amber-500 text-white hover:bg-amber-600 text-sm"
+            className="rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center w-[clamp(32px,11cqw,56px)] h-[clamp(32px,11cqw,56px)] shadow-sm transition-colors"
+            aria-label="Pause"
+            title="Pause"
           >
-            Pause
+            <Pause className="w-[clamp(14px,5cqw,24px)] h-[clamp(14px,5cqw,24px)]" fill="currentColor" />
           </button>
         )}
         <button
           onClick={reset}
-          className="px-3 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 text-sm"
+          className="rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center w-[clamp(28px,9cqw,44px)] h-[clamp(28px,9cqw,44px)] transition-colors"
+          aria-label="Reset"
+          title="Reset"
         >
-          Reset
+          <Square className="w-[clamp(10px,3.5cqw,18px)] h-[clamp(10px,3.5cqw,18px)]" />
         </button>
       </div>
     </div>
