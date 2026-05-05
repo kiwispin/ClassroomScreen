@@ -98,4 +98,59 @@ describe('app store', () => {
     useAppStore.getState().toggleAnnotate();
     expect(useAppStore.getState().annotateOpen).toBe(false);
   });
+
+  it('savePresetAs creates a new preset from current state', () => {
+    useAppStore.getState().addWidget('demo');
+    useAppStore.getState().savePresetAs('Maths');
+    const s = useAppStore.getState();
+    expect(s.presets).toHaveLength(1);
+    expect(s.presets[0].name).toBe('Maths');
+    expect(s.presets[0].state.widgets).toHaveLength(1);
+    expect(s.activePresetId).toBe(s.presets[0].id);
+  });
+
+  it('switchToPreset replaces current with a deep copy', () => {
+    useAppStore.getState().addWidget('demo');
+    useAppStore.getState().savePresetAs('A');
+    const aId = useAppStore.getState().presets[0].id;
+
+    useAppStore.getState().addWidget('demo');
+    useAppStore.getState().savePresetAs('B');
+    expect(useAppStore.getState().current.widgets).toHaveLength(2);
+
+    useAppStore.getState().switchToPreset(aId);
+    const s = useAppStore.getState();
+    expect(s.current.widgets).toHaveLength(1);
+    expect(s.activePresetId).toBe(aId);
+
+    useAppStore.getState().addWidget('demo');
+    expect(useAppStore.getState().current.widgets).toHaveLength(2);
+    const presetA = useAppStore.getState().presets.find((p) => p.id === aId)!;
+    expect(presetA.state.widgets).toHaveLength(1);
+  });
+
+  it('updateActivePreset writes current state into the active preset', () => {
+    useAppStore.getState().savePresetAs('A');
+    const aId = useAppStore.getState().presets[0].id;
+    useAppStore.getState().addWidget('demo');
+    useAppStore.getState().updateActivePreset();
+    const a = useAppStore.getState().presets.find((p) => p.id === aId)!;
+    expect(a.state.widgets).toHaveLength(1);
+  });
+
+  it('renamePreset changes the name', () => {
+    useAppStore.getState().savePresetAs('A');
+    const id = useAppStore.getState().presets[0].id;
+    useAppStore.getState().renamePreset(id, 'Beta');
+    expect(useAppStore.getState().presets[0].name).toBe('Beta');
+  });
+
+  it('deletePreset removes by id and clears activePresetId if matched', () => {
+    useAppStore.getState().savePresetAs('A');
+    const id = useAppStore.getState().presets[0].id;
+    expect(useAppStore.getState().activePresetId).toBe(id);
+    useAppStore.getState().deletePreset(id);
+    expect(useAppStore.getState().presets).toHaveLength(0);
+    expect(useAppStore.getState().activePresetId).toBeNull();
+  });
 });

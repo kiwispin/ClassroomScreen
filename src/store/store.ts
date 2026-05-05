@@ -26,7 +26,14 @@ type Actions = {
   updateWidgetConfig: (id: string, patch: Record<string, unknown>) => void;
   setBackground: (bg: import('./types').Background) => void;
   toggleAnnotate: () => void;
+  savePresetAs: (name: string) => void;
+  switchToPreset: (id: string) => void;
+  updateActivePreset: () => void;
+  renamePreset: (id: string, name: string) => void;
+  deletePreset: (id: string) => void;
 };
+
+const cloneScreen = <T,>(s: T): T => JSON.parse(JSON.stringify(s));
 
 const initialState: AppState = {
   schemaVersion: SCHEMA_VERSION,
@@ -120,6 +127,61 @@ export const useAppStore = create<AppState & Actions>()(
         })),
 
       toggleAnnotate: () => set((s) => ({ annotateOpen: !s.annotateOpen })),
+
+      savePresetAs: (name) =>
+        set((s) => {
+          const id = newId();
+          const now = Date.now();
+          return {
+            presets: [
+              ...s.presets,
+              {
+                id,
+                name,
+                state: cloneScreen(s.current),
+                createdAt: now,
+                updatedAt: now,
+              },
+            ],
+            activePresetId: id,
+          };
+        }),
+
+      switchToPreset: (id) =>
+        set((s) => {
+          const p = s.presets.find((p) => p.id === id);
+          if (!p) return {};
+          return {
+            current: cloneScreen(p.state),
+            activePresetId: id,
+          };
+        }),
+
+      updateActivePreset: () =>
+        set((s) => {
+          if (!s.activePresetId) return {};
+          const now = Date.now();
+          return {
+            presets: s.presets.map((p) =>
+              p.id === s.activePresetId
+                ? { ...p, state: cloneScreen(s.current), updatedAt: now }
+                : p,
+            ),
+          };
+        }),
+
+      renamePreset: (id, name) =>
+        set((s) => ({
+          presets: s.presets.map((p) =>
+            p.id === id ? { ...p, name, updatedAt: Date.now() } : p,
+          ),
+        })),
+
+      deletePreset: (id) =>
+        set((s) => ({
+          presets: s.presets.filter((p) => p.id !== id),
+          activePresetId: s.activePresetId === id ? null : s.activePresetId,
+        })),
     }),
     {
       name: 'classroomscreen-state',
