@@ -9,7 +9,7 @@ export default function Toolbar() {
   const toggleAnnotate = useAppStore((s) => s.toggleAnnotate);
 
   return (
-    <div className="absolute top-0 left-0 right-0 h-12 z-50 flex items-center gap-1 px-3 bg-white/90 backdrop-blur shadow-sm">
+    <div className="fixed top-0 left-0 right-0 h-12 z-[300] flex items-center gap-1 px-3 bg-white/90 backdrop-blur shadow-sm">
       {allWidgets.map((w) => (
         <button
           key={w.type}

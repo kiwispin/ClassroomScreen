@@ -7,13 +7,15 @@ type Props = {
   setColor: (c: string) => void;
   width: number;
   setWidth: (w: number) => void;
+  canUndo: boolean;
+  onUndo: () => void;
   onClear: () => void;
   onClose: () => void;
 };
 
 export default function AnnotateToolBar(p: Props) {
   return (
-    <div className="absolute left-1/2 -translate-x-1/2 bottom-4 z-[210] bg-white/95 backdrop-blur rounded-full shadow-lg border border-slate-200 px-3 py-2 flex items-center gap-2">
+    <div className="fixed left-1/2 -translate-x-1/2 bottom-4 z-[210] bg-white/95 backdrop-blur rounded-full shadow-lg border border-slate-200 px-3 py-2 flex items-center gap-2">
       <button
         onClick={() => p.setTool('pen')}
         className={
@@ -62,14 +64,24 @@ export default function AnnotateToolBar(p: Props) {
       />
       <div className="w-px h-6 bg-slate-200 mx-1" />
       <button
+        onClick={p.onUndo}
+        disabled={!p.canUndo}
+        className="px-3 py-1 rounded hover:bg-slate-100 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+        title="Undo (⌘Z / Ctrl-Z)"
+      >
+        ↶ Undo
+      </button>
+      <button
         onClick={p.onClear}
-        className="px-3 py-1 rounded hover:bg-slate-100 text-sm"
+        disabled={!p.canUndo}
+        className="px-3 py-1 rounded hover:bg-slate-100 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Clear
       </button>
       <button
         onClick={p.onClose}
         className="px-3 py-1 rounded bg-slate-700 text-white text-sm hover:bg-slate-800"
+        title="Done (Esc)"
       >
         Done
       </button>
