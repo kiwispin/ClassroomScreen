@@ -7,6 +7,15 @@ import {
   WidgetType,
 } from './types';
 import { newId } from '../lib/uuid';
+import { getWidgetMeta } from '../widgets/registry';
+
+const FALLBACK_SIZE = { width: 240, height: 160 };
+
+const getDefaultSize = (type: WidgetType): { width: number; height: number } =>
+  getWidgetMeta(type)?.defaultSize ?? FALLBACK_SIZE;
+
+const getDefaultConfig = (type: WidgetType): Record<string, unknown> =>
+  getWidgetMeta(type)?.defaultConfig ?? {};
 
 type Actions = {
   addWidget: (type: WidgetType) => void;
@@ -46,9 +55,9 @@ export const useAppStore = create<AppState & Actions>()(
                 id: newId(),
                 type,
                 position: { x: 80, y: 80 },
-                size: { width: 240, height: 160 },
+                size: getDefaultSize(type),
                 zIndex: nextZIndex(s.current.widgets),
-                config: {},
+                config: getDefaultConfig(type),
               },
             ],
           },

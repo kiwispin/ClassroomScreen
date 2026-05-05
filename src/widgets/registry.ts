@@ -1,7 +1,10 @@
 import type { ComponentType } from 'react';
 import type { WidgetInstance, WidgetType } from '../store/types';
+
 import DemoWidget from './Demo';
 import { demoMeta, type WidgetMeta } from './Demo/meta';
+import Notepad from './Notepad';
+import { notepadMeta } from './Notepad/meta';
 
 export type WidgetProps = { instance: WidgetInstance };
 
@@ -12,6 +15,7 @@ type Entry = {
 
 const registry: Partial<Record<WidgetType, Entry>> = {
   demo: { meta: demoMeta, Component: DemoWidget },
+  notepad: { meta: notepadMeta, Component: Notepad },
 };
 
 export const allWidgets: WidgetMeta[] = Object.values(registry)
