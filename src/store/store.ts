@@ -26,6 +26,7 @@ type Actions = {
   updateWidgetConfig: (id: string, patch: Record<string, unknown>) => void;
   setBackground: (bg: import('./types').Background) => void;
   toggleAnnotate: () => void;
+  toggleToolbarPinned: () => void;
   savePresetAs: (name: string) => void;
   switchToPreset: (id: string) => void;
   updateActivePreset: () => void;
@@ -127,6 +128,8 @@ export const useAppStore = create<AppState & Actions>()(
         })),
 
       toggleAnnotate: () => set((s) => ({ annotateOpen: !s.annotateOpen })),
+
+      toggleToolbarPinned: () => set((s) => ({ toolbarPinned: !s.toolbarPinned })),
 
       savePresetAs: (name) =>
         set((s) => {
