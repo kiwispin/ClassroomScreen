@@ -1,3 +1,4 @@
+import { Cog } from 'lucide-react';
 import { useRef } from 'react';
 import SettingsPopover from '../../components/SettingsPopover';
 import { useAppStore } from '../../store/store';
@@ -34,9 +35,7 @@ export default function ImageEmbedSettings({ instance }: WidgetSettingsProps) {
           className="h-5 w-5 rounded hover:bg-slate-200 flex items-center justify-center"
           aria-label="Image settings"
           title="Settings"
-        >
-          ⚙
-        </button>
+        ><Cog className="w-3.5 h-3.5" strokeWidth={2} /></button>
       )}
     >
       {() => (

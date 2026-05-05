@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Folder } from 'lucide-react';
 import SettingsPopover from './SettingsPopover';
 import NamePromptDialog from './NamePromptDialog';
 import ConfirmDialog from './ConfirmDialog';
@@ -30,7 +31,7 @@ export default function PresetMenu() {
       <SettingsPopover
         trigger={(open) => (
           <ToolButton
-            icon="📁"
+            Icon={Folder}
             label={activeName ?? 'presets'}
             title={activeName ? `Preset: ${activeName}` : 'Presets'}
             active={Boolean(activeName)}

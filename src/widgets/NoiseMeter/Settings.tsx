@@ -1,3 +1,4 @@
+import { Cog } from 'lucide-react';
 import SettingsPopover from '../../components/SettingsPopover';
 import { useAppStore } from '../../store/store';
 import type { WidgetSettingsProps } from '../Demo/meta';
@@ -19,9 +20,7 @@ export default function NoiseMeterSettings({ instance }: WidgetSettingsProps) {
           className="h-5 w-5 rounded hover:bg-slate-200 flex items-center justify-center"
           aria-label="Noise meter settings"
           title="Settings"
-        >
-          ⚙
-        </button>
+        ><Cog className="w-3.5 h-3.5" strokeWidth={2} /></button>
       )}
     >
       {() => (

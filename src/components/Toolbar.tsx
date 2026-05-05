@@ -1,22 +1,18 @@
 import { useEffect, useState } from 'react';
+import { Pencil } from 'lucide-react';
 import { allWidgets } from '../widgets/registry';
 import { useAppStore } from '../store/store';
 import BackgroundPicker from '../overlays/Background/Picker';
 import PresetMenu from './PresetMenu';
 import ToolButton from './ToolButton';
-import { useFullscreen } from '../lib/useFullscreen';
 
 const IDLE_MS = 4_000;
 
-type Props = { onOpenHelp: () => void };
-
-export default function Toolbar({ onOpenHelp }: Props) {
+export default function Toolbar() {
   const addWidget = useAppStore((s) => s.addWidget);
   const annotateOpen = useAppStore((s) => s.annotateOpen);
   const toggleAnnotate = useAppStore((s) => s.toggleAnnotate);
   const pinned = useAppStore((s) => s.toolbarPinned);
-  const togglePinned = useAppStore((s) => s.toggleToolbarPinned);
-  const { isFs, toggle: toggleFs } = useFullscreen();
 
   const [visible, setVisible] = useState(true);
 
@@ -50,45 +46,25 @@ export default function Toolbar({ onOpenHelp }: Props) {
         (visible ? 'translate-y-0' : 'translate-y-[120%]')
       }
     >
-      <div className="pointer-events-auto rounded-2xl shadow-lg border border-slate-200 bg-white/95 backdrop-blur px-2 py-1.5 flex items-center gap-1 max-w-[calc(100vw-24px)] overflow-x-auto">
-        {allWidgets.map((w) => (
-          <ToolButton
-            key={w.type}
-            icon={w.icon}
-            label={w.label.toLowerCase()}
-            title={`Add ${w.label}`}
-            onClick={() => addWidget(w.type)}
-          />
-        ))}
-        <div className="shrink-0 w-px h-10 bg-slate-200 mx-0.5" />
+      <div className="pointer-events-auto rounded-2xl shadow-md border border-slate-200/80 bg-white/95 backdrop-blur px-2 py-1.5 flex items-center gap-0.5 max-w-[calc(100vw-24px)] overflow-x-auto">
         <ToolButton
-          icon="✏️"
+          Icon={Pencil}
           label="annotate"
           title={annotateOpen ? 'Exit annotate (A)' : 'Toggle Annotate (A)'}
           active={annotateOpen}
           onClick={toggleAnnotate}
         />
-        <ToolButton
-          icon={isFs ? '🗗' : '⛶'}
-          label="fullscreen"
-          title={isFs ? 'Exit fullscreen (F)' : 'Enter fullscreen (F)'}
-          active={isFs}
-          onClick={toggleFs}
-        />
-        <ToolButton
-          icon="?"
-          label="help"
-          title="Keyboard shortcuts (?)"
-          onClick={onOpenHelp}
-        />
-        <ToolButton
-          icon={pinned ? '📌' : '📍'}
-          label={pinned ? 'pinned' : 'auto-hide'}
-          title={pinned ? 'Toolbar pinned (click to auto-hide)' : 'Toolbar auto-hides (click to pin)'}
-          active={pinned}
-          onClick={togglePinned}
-        />
-        <div className="shrink-0 w-px h-10 bg-slate-200 mx-0.5" />
+        <div className="shrink-0 w-px h-8 bg-slate-200/80 mx-1" />
+        {allWidgets.map((w) => (
+          <ToolButton
+            key={w.type}
+            Icon={w.Icon}
+            label={w.label.toLowerCase()}
+            title={`Add ${w.label}`}
+            onClick={() => addWidget(w.type)}
+          />
+        ))}
+        <div className="shrink-0 w-px h-8 bg-slate-200/80 mx-1" />
         <PresetMenu />
         <BackgroundPicker />
       </div>

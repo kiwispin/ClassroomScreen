@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { X } from 'lucide-react';
 import type { WidgetInstance } from '../store/types';
 import { getWidgetComponent, getWidgetMeta } from '../widgets/registry';
 import { useAppStore } from '../store/store';
@@ -37,7 +38,7 @@ export default function WidgetTile({ instance }: { instance: WidgetInstance }) {
             aria-label={`Remove ${meta.label}`}
             title="Remove"
           >
-            ×
+            <X className="w-3.5 h-3.5" strokeWidth={2} />
           </button>
         </div>
       </div>

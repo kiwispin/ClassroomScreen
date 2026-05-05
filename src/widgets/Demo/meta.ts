@@ -1,4 +1,6 @@
 import type { ComponentType } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { TestTube } from 'lucide-react';
 import type { WidgetInstance, WidgetType } from '../../store/types';
 
 export type WidgetSettingsProps = { instance: WidgetInstance };
@@ -6,7 +8,7 @@ export type WidgetSettingsProps = { instance: WidgetInstance };
 export type WidgetMeta = {
   type: WidgetType;
   label: string;
-  icon: string;
+  Icon: LucideIcon;
   defaultSize: { width: number; height: number };
   defaultConfig: Record<string, unknown>;
   Settings?: ComponentType<WidgetSettingsProps>;
@@ -16,7 +18,7 @@ export type WidgetMeta = {
 export const demoMeta: WidgetMeta = {
   type: 'demo',
   label: 'Demo',
-  icon: '🧪',
+  Icon: TestTube,
   defaultSize: { width: 240, height: 160 },
   defaultConfig: {},
   hidden: true,

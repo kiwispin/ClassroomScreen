@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Toolbar from '../components/Toolbar';
+import TopRightCluster from '../components/TopRightCluster';
 import WidgetCanvas from '../components/WidgetCanvas';
 import BackgroundLayer from '../overlays/Background';
 import AnnotateOverlay from '../overlays/Annotate';
@@ -31,7 +32,8 @@ export default function App() {
     <div className="relative h-full w-full overflow-hidden">
       <BackgroundLayer bg={bg} />
       <WidgetCanvas />
-      <Toolbar onOpenHelp={() => setHelpOpen(true)} />
+      <Toolbar />
+      <TopRightCluster onOpenHelp={() => setHelpOpen(true)} />
       <AnnotateOverlay />
       <HelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>

@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { Palette } from 'lucide-react';
 import SettingsPopover from '../../components/SettingsPopover';
 import ToolButton from '../../components/ToolButton';
 import { useAppStore } from '../../store/store';
@@ -36,7 +37,7 @@ export default function BackgroundPicker() {
     <SettingsPopover
       trigger={(open) => (
         <ToolButton
-          icon="🖌️"
+          Icon={Palette}
           label="background"
           title="Background"
           onClick={open}

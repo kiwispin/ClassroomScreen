@@ -1,10 +1,11 @@
+import { Timer } from 'lucide-react';
 import type { WidgetMeta } from '../Demo/meta';
 import TimerSettings from './Settings';
 
 export const timerMeta: WidgetMeta = {
   type: 'timer',
   label: 'Timer',
-  icon: '⏱️',
+  Icon: Timer,
   defaultSize: { width: 280, height: 180 },
   defaultConfig: {
     durationMs: 5 * 60_000,
