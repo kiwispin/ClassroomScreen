@@ -5,6 +5,8 @@ import DemoWidget from './Demo';
 import { demoMeta, type WidgetMeta } from './Demo/meta';
 import Notepad from './Notepad';
 import { notepadMeta } from './Notepad/meta';
+import Clock from './Clock';
+import { clockMeta } from './Clock/meta';
 
 export type WidgetProps = { instance: WidgetInstance };
 
@@ -16,6 +18,7 @@ type Entry = {
 const registry: Partial<Record<WidgetType, Entry>> = {
   demo: { meta: demoMeta, Component: DemoWidget },
   notepad: { meta: notepadMeta, Component: Notepad },
+  clock: { meta: clockMeta, Component: Clock },
 };
 
 export const allWidgets: WidgetMeta[] = Object.values(registry)
