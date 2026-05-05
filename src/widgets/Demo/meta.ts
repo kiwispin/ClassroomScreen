@@ -1,4 +1,7 @@
-import type { WidgetType } from '../../store/types';
+import type { ComponentType } from 'react';
+import type { WidgetInstance, WidgetType } from '../../store/types';
+
+export type WidgetSettingsProps = { instance: WidgetInstance };
 
 export type WidgetMeta = {
   type: WidgetType;
@@ -6,6 +9,7 @@ export type WidgetMeta = {
   icon: string;
   defaultSize: { width: number; height: number };
   defaultConfig: Record<string, unknown>;
+  Settings?: ComponentType<WidgetSettingsProps>;
 };
 
 export const demoMeta: WidgetMeta = {
