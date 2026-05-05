@@ -14,6 +14,9 @@ type Actions = {
   updateWidgetPosition: (id: string, x: number, y: number) => void;
   updateWidgetSize: (id: string, width: number, height: number) => void;
   focusWidget: (id: string) => void;
+  updateWidgetConfig: (id: string, patch: Record<string, unknown>) => void;
+  setBackground: (bg: import('./types').Background) => void;
+  toggleAnnotate: () => void;
 };
 
 const initialState: AppState = {
@@ -91,6 +94,23 @@ export const useAppStore = create<AppState & Actions>()(
             },
           };
         }),
+
+      updateWidgetConfig: (id, patch) =>
+        set((s) => ({
+          current: {
+            ...s.current,
+            widgets: s.current.widgets.map((w) =>
+              w.id === id ? { ...w, config: { ...w.config, ...patch } } : w,
+            ),
+          },
+        })),
+
+      setBackground: (bg) =>
+        set((s) => ({
+          current: { ...s.current, background: bg },
+        })),
+
+      toggleAnnotate: () => set((s) => ({ annotateOpen: !s.annotateOpen })),
     }),
     {
       name: 'classroomscreen-state',

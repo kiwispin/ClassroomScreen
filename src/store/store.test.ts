@@ -70,4 +70,32 @@ describe('app store', () => {
     const bZ = updated.find((w) => w.id === b.id)!.zIndex;
     expect(aZ).toBeGreaterThan(bZ);
   });
+
+  it('updateWidgetConfig merges into the widget config', () => {
+    useAppStore.getState().addWidget('demo');
+    const id = useAppStore.getState().current.widgets[0].id;
+    useAppStore.getState().updateWidgetConfig(id, { fontSize: 24 });
+    const w = useAppStore.getState().current.widgets[0];
+    expect(w.config).toEqual({ fontSize: 24 });
+
+    useAppStore.getState().updateWidgetConfig(id, { color: 'red' });
+    const w2 = useAppStore.getState().current.widgets[0];
+    expect(w2.config).toEqual({ fontSize: 24, color: 'red' });
+  });
+
+  it('setBackground replaces the current background', () => {
+    useAppStore.getState().setBackground({ kind: 'solid', color: '#000' });
+    expect(useAppStore.getState().current.background).toEqual({
+      kind: 'solid',
+      color: '#000',
+    });
+  });
+
+  it('toggleAnnotate flips the flag', () => {
+    expect(useAppStore.getState().annotateOpen).toBe(false);
+    useAppStore.getState().toggleAnnotate();
+    expect(useAppStore.getState().annotateOpen).toBe(true);
+    useAppStore.getState().toggleAnnotate();
+    expect(useAppStore.getState().annotateOpen).toBe(false);
+  });
 });
