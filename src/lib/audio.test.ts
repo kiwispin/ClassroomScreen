@@ -7,7 +7,18 @@ describe('audio', () => {
   });
 
   it('exports the expected SFX names', () => {
-    expect(SFX_NAMES).toEqual(['bell', 'chime', 'alarm', 'gentle']);
+    expect(SFX_NAMES).toEqual([
+      'bell',
+      'chime',
+      'alarm',
+      'gentle',
+      'fanfare',
+      'levelup',
+      'tada',
+      'coin',
+      'gameover',
+      'ding',
+    ]);
   });
 
   it('playSfx returns silently when AudioContext is unavailable', () => {

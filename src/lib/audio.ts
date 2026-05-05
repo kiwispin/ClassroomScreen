@@ -1,4 +1,15 @@
-export const SFX_NAMES = ['bell', 'chime', 'alarm', 'gentle'] as const;
+export const SFX_NAMES = [
+  'bell',
+  'chime',
+  'alarm',
+  'gentle',
+  'fanfare',
+  'levelup',
+  'tada',
+  'coin',
+  'gameover',
+  'ding',
+] as const;
 export type SfxName = (typeof SFX_NAMES)[number];
 
 type Tone = {
@@ -27,6 +38,44 @@ const SCRIPTS: Record<SfxName, Tone[]> = {
   gentle: [
     { freq: 440, start: 0, duration: 0.8, type: 'sine', volume: 0.3 },
     { freq: 554.37, start: 0.4, duration: 0.8, type: 'sine', volume: 0.25 },
+  ],
+  fanfare: [
+    { freq: 392.0,  start: 0.00, duration: 0.12, type: 'square', volume: 0.3 },
+    { freq: 392.0,  start: 0.14, duration: 0.12, type: 'square', volume: 0.3 },
+    { freq: 392.0,  start: 0.28, duration: 0.12, type: 'square', volume: 0.3 },
+    { freq: 523.25, start: 0.42, duration: 0.30, type: 'square', volume: 0.35 },
+    { freq: 659.25, start: 0.74, duration: 0.30, type: 'square', volume: 0.35 },
+    { freq: 783.99, start: 1.06, duration: 0.50, type: 'square', volume: 0.35 },
+  ],
+  levelup: [
+    { freq: 261.63, start: 0.00, duration: 0.07, type: 'square', volume: 0.25 },
+    { freq: 329.63, start: 0.08, duration: 0.07, type: 'square', volume: 0.25 },
+    { freq: 392.0,  start: 0.16, duration: 0.07, type: 'square', volume: 0.25 },
+    { freq: 523.25, start: 0.24, duration: 0.07, type: 'square', volume: 0.25 },
+    { freq: 659.25, start: 0.32, duration: 0.07, type: 'square', volume: 0.25 },
+    { freq: 783.99, start: 0.40, duration: 0.07, type: 'square', volume: 0.25 },
+    { freq: 1046.5, start: 0.48, duration: 0.20, type: 'square', volume: 0.30 },
+  ],
+  tada: [
+    { freq: 392.0,  start: 0.00, duration: 0.18, type: 'square', volume: 0.30 },
+    { freq: 493.88, start: 0.00, duration: 0.18, type: 'square', volume: 0.20 },
+    { freq: 587.33, start: 0.00, duration: 0.18, type: 'square', volume: 0.18 },
+    { freq: 523.25, start: 0.22, duration: 0.50, type: 'square', volume: 0.30 },
+    { freq: 659.25, start: 0.22, duration: 0.50, type: 'square', volume: 0.22 },
+    { freq: 783.99, start: 0.22, duration: 0.50, type: 'square', volume: 0.20 },
+  ],
+  coin: [
+    { freq: 987.77, start: 0.00, duration: 0.06, type: 'square', volume: 0.30 },
+    { freq: 1318.5, start: 0.07, duration: 0.20, type: 'square', volume: 0.30 },
+  ],
+  gameover: [
+    { freq: 392.0,  start: 0.00, duration: 0.20, type: 'square', volume: 0.30 },
+    { freq: 369.99, start: 0.22, duration: 0.20, type: 'square', volume: 0.28 },
+    { freq: 311.13, start: 0.44, duration: 0.20, type: 'square', volume: 0.26 },
+    { freq: 261.63, start: 0.66, duration: 0.50, type: 'square', volume: 0.30 },
+  ],
+  ding: [
+    { freq: 1318.5, start: 0.00, duration: 0.40, type: 'sine', volume: 0.35 },
   ],
 };
 
