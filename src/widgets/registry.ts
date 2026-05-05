@@ -29,6 +29,8 @@ import VideoEmbed from './VideoEmbed';
 import { videoEmbedMeta } from './VideoEmbed/meta';
 import ExitPoll from './ExitPoll';
 import { exitPollMeta } from './ExitPoll/meta';
+import NoiseMeter from './NoiseMeter';
+import { noiseMeterMeta } from './NoiseMeter/meta';
 
 export type WidgetProps = { instance: WidgetInstance };
 
@@ -52,6 +54,7 @@ const registry: Partial<Record<WidgetType, Entry>> = {
   calendar: { meta: calendarMeta, Component: Calendar },
   video: { meta: videoEmbedMeta, Component: VideoEmbed },
   poll: { meta: exitPollMeta, Component: ExitPoll },
+  noisemeter: { meta: noiseMeterMeta, Component: NoiseMeter },
 };
 
 export const allWidgets: WidgetMeta[] = Object.values(registry)
