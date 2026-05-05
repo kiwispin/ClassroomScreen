@@ -1,0 +1,11 @@
+import type { WidgetMeta } from '../Demo/meta';
+import CalendarSettings from './Settings';
+
+export const calendarMeta: WidgetMeta = {
+  type: 'calendar',
+  label: 'Calendar',
+  icon: '📅',
+  defaultSize: { width: 280, height: 160 },
+  defaultConfig: { showMonthGrid: false },
+  Settings: CalendarSettings,
+};

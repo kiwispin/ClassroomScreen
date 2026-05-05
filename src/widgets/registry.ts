@@ -23,6 +23,8 @@ import QRCodeWidget from './QRCode';
 import { qrCodeMeta } from './QRCode/meta';
 import ImageEmbed from './ImageEmbed';
 import { imageEmbedMeta } from './ImageEmbed/meta';
+import Calendar from './Calendar';
+import { calendarMeta } from './Calendar/meta';
 
 export type WidgetProps = { instance: WidgetInstance };
 
@@ -43,6 +45,7 @@ const registry: Partial<Record<WidgetType, Entry>> = {
   worksymbols: { meta: workSymbolsMeta, Component: WorkSymbols },
   qrcode: { meta: qrCodeMeta, Component: QRCodeWidget },
   image: { meta: imageEmbedMeta, Component: ImageEmbed },
+  calendar: { meta: calendarMeta, Component: Calendar },
 };
 
 export const allWidgets: WidgetMeta[] = Object.values(registry)
