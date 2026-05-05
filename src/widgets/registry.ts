@@ -11,6 +11,8 @@ import Timer from './Timer';
 import { timerMeta } from './Timer/meta';
 import Stopwatch from './Stopwatch';
 import { stopwatchMeta } from './Stopwatch/meta';
+import NamePicker from './NamePicker';
+import { namePickerMeta } from './NamePicker/meta';
 
 export type WidgetProps = { instance: WidgetInstance };
 
@@ -25,6 +27,7 @@ const registry: Partial<Record<WidgetType, Entry>> = {
   clock: { meta: clockMeta, Component: Clock },
   timer: { meta: timerMeta, Component: Timer },
   stopwatch: { meta: stopwatchMeta, Component: Stopwatch },
+  namepicker: { meta: namePickerMeta, Component: NamePicker },
 };
 
 export const allWidgets: WidgetMeta[] = Object.values(registry)
