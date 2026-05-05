@@ -21,6 +21,8 @@ import WorkSymbols from './WorkSymbols';
 import { workSymbolsMeta } from './WorkSymbols/meta';
 import QRCodeWidget from './QRCode';
 import { qrCodeMeta } from './QRCode/meta';
+import ImageEmbed from './ImageEmbed';
+import { imageEmbedMeta } from './ImageEmbed/meta';
 
 export type WidgetProps = { instance: WidgetInstance };
 
@@ -40,6 +42,7 @@ const registry: Partial<Record<WidgetType, Entry>> = {
   trafficlight: { meta: trafficLightMeta, Component: TrafficLight },
   worksymbols: { meta: workSymbolsMeta, Component: WorkSymbols },
   qrcode: { meta: qrCodeMeta, Component: QRCodeWidget },
+  image: { meta: imageEmbedMeta, Component: ImageEmbed },
 };
 
 export const allWidgets: WidgetMeta[] = Object.values(registry)

@@ -1,17 +1,27 @@
 import { keys, createStore } from 'idb-keyval';
 import { deleteImage } from './idb';
-import type { AppState } from '../../store/types';
+import type { AppState, ScreenState } from '../../store/types';
 
 const imageStore = createStore('classroomscreen', 'images');
+
+const collectFromScreen = (scr: ScreenState, ids: Set<string>): void => {
+  if (scr.background.kind === 'image') ids.add(scr.background.imageId);
+  for (const w of scr.widgets) {
+    if (w.type === 'image') {
+      const c = w.config as { source?: string; imageId?: string };
+      if (c.source === 'upload' && typeof c.imageId === 'string') {
+        ids.add(c.imageId);
+      }
+    }
+  }
+};
 
 export const collectReferencedImageIds = (
   s: Pick<AppState, 'current' | 'presets'>,
 ): Set<string> => {
   const ids = new Set<string>();
-  if (s.current.background.kind === 'image') ids.add(s.current.background.imageId);
-  for (const p of s.presets) {
-    if (p.state.background.kind === 'image') ids.add(p.state.background.imageId);
-  }
+  collectFromScreen(s.current, ids);
+  for (const p of s.presets) collectFromScreen(p.state, ids);
   return ids;
 };
 

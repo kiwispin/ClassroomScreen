@@ -23,6 +23,22 @@ describe('collectReferencedImageIds', () => {
     const ids = collectReferencedImageIds(s);
     expect(ids).toEqual(new Set(['a', 'b']));
   });
+
+  it('counts image-widget upload references too', () => {
+    const s = baseState();
+    s.current.widgets = [
+      {
+        id: 'w1',
+        type: 'image',
+        position: { x: 0, y: 0 },
+        size: { width: 100, height: 100 },
+        zIndex: 1,
+        config: { source: 'upload', imageId: 'img-1' },
+      },
+    ];
+    const ids = collectReferencedImageIds(s);
+    expect(ids).toEqual(new Set(['img-1']));
+  });
 });
 
 describe('pruneOrphanImages', () => {
