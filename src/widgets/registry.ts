@@ -25,6 +25,8 @@ import ImageEmbed from './ImageEmbed';
 import { imageEmbedMeta } from './ImageEmbed/meta';
 import Calendar from './Calendar';
 import { calendarMeta } from './Calendar/meta';
+import VideoEmbed from './VideoEmbed';
+import { videoEmbedMeta } from './VideoEmbed/meta';
 
 export type WidgetProps = { instance: WidgetInstance };
 
@@ -46,6 +48,7 @@ const registry: Partial<Record<WidgetType, Entry>> = {
   qrcode: { meta: qrCodeMeta, Component: QRCodeWidget },
   image: { meta: imageEmbedMeta, Component: ImageEmbed },
   calendar: { meta: calendarMeta, Component: Calendar },
+  video: { meta: videoEmbedMeta, Component: VideoEmbed },
 };
 
 export const allWidgets: WidgetMeta[] = Object.values(registry)
