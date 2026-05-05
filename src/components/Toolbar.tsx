@@ -1,6 +1,7 @@
 import { allWidgets } from '../widgets/registry';
 import { useAppStore } from '../store/store';
 import BackgroundPicker from '../overlays/Background/Picker';
+import PresetMenu from './PresetMenu';
 
 export default function Toolbar() {
   const addWidget = useAppStore((s) => s.addWidget);
@@ -29,8 +30,13 @@ export default function Toolbar() {
       >
         ✏️ <span>Annotate</span>
       </button>
-      <div className="ml-auto relative">
-        <BackgroundPicker />
+      <div className="ml-auto flex items-center gap-1">
+        <div className="relative">
+          <PresetMenu />
+        </div>
+        <div className="relative">
+          <BackgroundPicker />
+        </div>
       </div>
     </div>
   );
