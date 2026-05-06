@@ -4,9 +4,7 @@ import type { WidgetInstance } from '../../store/types';
 import { useAppStore } from '../../store/store';
 import { playSfx, type SfxName } from '../../lib/audio';
 import { playCustomAudio } from '../../lib/audio-storage';
-import { remainingMs, type TimerState } from './logic';
-// Progress is shown as a thin bar at the bottom rather than a ring on the
-// left, matching ClassroomScreen's layout where digits get most of the room.
+import { formatMmss, remainingMs, type TimerState } from './logic';
 
 export type TimerSfx = SfxName | 'custom';
 
@@ -34,20 +32,20 @@ const fromDigits = (
   mTens: number, mOnes: number, sTens: number, sOnes: number,
 ): number => ((mTens * 10 + mOnes) * 60 + sTens * 10 + sOnes) * 1000;
 
+// --- WIDE-MODE digit column (per-digit +/-) ---------------------------------
+
+const W_DIGIT = 'text-[clamp(36px,min(16cqw,52cqh),320px)]';
+const W_PM = 'w-[clamp(14px,min(3cqw,9cqh),32px)] h-[clamp(14px,min(3cqw,9cqh),32px)]';
+const W_BTN = 'w-[clamp(36px,min(11cqw,32cqh),96px)] h-[clamp(36px,min(11cqw,32cqh),96px)]';
+const W_PLAY_ICON = 'w-[clamp(16px,min(5cqw,15cqh),44px)] h-[clamp(16px,min(5cqw,15cqh),44px)]';
+const W_RESET_BTN = 'w-[clamp(28px,min(8cqw,24cqh),68px)] h-[clamp(28px,min(8cqw,24cqh),68px)]';
+const W_RESET_ICON = 'w-[clamp(12px,min(3cqw,9cqh),26px)] h-[clamp(12px,min(3cqw,9cqh),26px)]';
+
 type DigitColumnProps = {
   value: number;
   onAdjust: (delta: 1 | -1) => void;
   disabled?: boolean;
 };
-
-// Sizes scale with min(cqw, cqh) so the timer fits both wide-and-short
-// and tall-and-narrow tile shapes without overflow.
-const DIGIT_SIZE = 'text-[clamp(36px,min(16cqw,52cqh),320px)]';
-const PLUSMINUS_SIZE = 'w-[clamp(14px,min(3cqw,9cqh),32px)] h-[clamp(14px,min(3cqw,9cqh),32px)]';
-const ROUND_BUTTON_SIZE = 'w-[clamp(36px,min(11cqw,32cqh),96px)] h-[clamp(36px,min(11cqw,32cqh),96px)]';
-const PLAY_ICON_SIZE = 'w-[clamp(16px,min(5cqw,15cqh),44px)] h-[clamp(16px,min(5cqw,15cqh),44px)]';
-const RESET_BUTTON_SIZE = 'w-[clamp(28px,min(8cqw,24cqh),68px)] h-[clamp(28px,min(8cqw,24cqh),68px)]';
-const RESET_ICON_SIZE = 'w-[clamp(12px,min(3cqw,9cqh),26px)] h-[clamp(12px,min(3cqw,9cqh),26px)]';
 
 const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
   <div className="flex flex-col items-center justify-center select-none">
@@ -58,11 +56,9 @@ const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
       className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
       aria-label="Increase"
     >
-      <Plus className={PLUSMINUS_SIZE} strokeWidth={2.5} />
+      <Plus className={W_PM} strokeWidth={2.5} />
     </button>
-    <div className={`font-bold tabular-nums ${DIGIT_SIZE} leading-none`}>
-      {value}
-    </div>
+    <div className={`font-bold tabular-nums ${W_DIGIT} leading-none`}>{value}</div>
     <button
       onClick={() => onAdjust(-1)}
       disabled={disabled}
@@ -70,10 +66,41 @@ const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
       className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
       aria-label="Decrease"
     >
-      <Minus className={PLUSMINUS_SIZE} strokeWidth={2.5} />
+      <Minus className={W_PM} strokeWidth={2.5} />
     </button>
   </div>
 );
+
+// --- TALL-MODE progress ring ------------------------------------------------
+
+const ProgressRing = ({ fraction }: { fraction: number }) => {
+  const r = 46;
+  const c = 2 * Math.PI * r;
+  const safe = Math.max(0, Math.min(1, fraction));
+  return (
+    <svg viewBox="0 0 100 100" className="w-full h-full" aria-hidden>
+      <circle cx="50" cy="50" r={r} fill="none" stroke="rgb(226 232 240)" strokeWidth="4" />
+      <circle
+        cx="50"
+        cy="50"
+        r={r}
+        fill="none"
+        stroke="rgb(99 102 241)"
+        strokeWidth="4"
+        strokeDasharray={c}
+        strokeDashoffset={c * (1 - safe)}
+        strokeLinecap="round"
+        transform="rotate(-90 50 50)"
+        style={{ transition: 'stroke-dashoffset 200ms linear' }}
+      />
+    </svg>
+  );
+};
+
+// ----------------------------------------------------------------------------
+
+type AspectMode = 'tall' | 'wide';
+const TALL_THRESHOLD = 1.6; // aspect (w / h) below which we use the ring layout
 
 export default function Timer({ instance }: { instance: WidgetInstance }) {
   const updateConfig = useAppStore((s) => s.updateWidgetConfig);
@@ -125,11 +152,28 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     if (!running || !atZero) firedRef.current = false;
   }, [running, atZero, sfx, customSoundId, autoReset, instance.id, updateConfig, fullMs]);
 
-  // Digits driven by remaining time when running, otherwise by full duration
+  // Aspect-ratio detection drives the layout
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [aspect, setAspect] = useState<AspectMode>('wide');
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (height === 0) return;
+      const ratio = width / height;
+      setAspect((prev) => {
+        const next: AspectMode = ratio < TALL_THRESHOLD ? 'tall' : 'wide';
+        return prev === next ? prev : next;
+      });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const displayMs = running ? remaining : durationMs;
   const [mTens, mOnes, sTens, sOnes] = parseDigits(displayMs);
 
-  // Elapsed / full ratio drives the bottom progress bar.
   const fraction = fullMs > 0 ? Math.max(0, Math.min(1, (fullMs - remaining) / fullMs)) : 0;
 
   const adjustDigit = (idx: 0 | 1 | 2 | 3, delta: 1 | -1) => {
@@ -140,6 +184,22 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     if (next < 0 || next > maxes[idx]) return;
     digits[idx] = next;
     const newMs = fromDigits(digits[0], digits[1], digits[2], digits[3]);
+    updateConfig(instance.id, {
+      fullDurationMs: newMs,
+      durationMs: newMs,
+      running: false,
+      startedAt: null,
+    });
+  };
+
+  // Tall layout uses a single +/- that bumps minutes by 1.
+  const adjustMinutes = (delta: 1 | -1) => {
+    if (running) return;
+    const totalSec = Math.floor(fullMs / 1000);
+    const minutes = Math.floor(totalSec / 60);
+    const seconds = totalSec % 60;
+    const nextMin = Math.max(0, Math.min(99, minutes + delta));
+    const newMs = (nextMin * 60 + seconds) * 1000;
     updateConfig(instance.id, {
       fullDurationMs: newMs,
       durationMs: newMs,
@@ -177,8 +237,104 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
 
   const flash = !running && remaining === 0 && fullMs > 0;
 
+  // === TALL layout (square-ish) ============================================
+
+  if (aspect === 'tall') {
+    // Sizes are based on cqmin so they scale with the smaller dimension.
+    const tallDigit = 'text-[clamp(28px,16cqmin,200px)]';
+    const tallPm = 'w-[clamp(16px,4cqmin,40px)] h-[clamp(16px,4cqmin,40px)]';
+    const tallPrimaryBtn =
+      'w-[clamp(36px,11cqmin,80px)] h-[clamp(36px,11cqmin,80px)]';
+    const tallPrimaryIcon =
+      'w-[clamp(16px,5cqmin,36px)] h-[clamp(16px,5cqmin,36px)]';
+    const tallResetBtn =
+      'w-[clamp(28px,8cqmin,60px)] h-[clamp(28px,8cqmin,60px)]';
+    const tallResetIcon =
+      'w-[clamp(12px,3.5cqmin,24px)] h-[clamp(12px,3.5cqmin,24px)]';
+
+    return (
+      <div
+        ref={containerRef}
+        className="relative h-full w-full"
+        style={{ containerType: 'size' as const }}
+      >
+        {/* Big progress ring centered (80% of the smaller dimension) */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div style={{ width: '80cqmin', height: '80cqmin' }}>
+            <ProgressRing fraction={fraction} />
+          </div>
+        </div>
+
+        {/* Digits + single +/- in the middle */}
+        <div
+          className={
+            'absolute inset-0 flex flex-col items-center justify-center select-none ' +
+            (flash ? 'text-rose-500 animate-pulse' : '')
+          }
+        >
+          <button
+            onClick={() => adjustMinutes(1)}
+            disabled={running}
+            tabIndex={-1}
+            className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
+            aria-label="Add a minute"
+          >
+            <Plus className={tallPm} strokeWidth={2.5} />
+          </button>
+          <div className={`font-bold tabular-nums ${tallDigit} leading-none`}>
+            {formatMmss(displayMs)}
+          </div>
+          <button
+            onClick={() => adjustMinutes(-1)}
+            disabled={running}
+            tabIndex={-1}
+            className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
+            aria-label="Remove a minute"
+          >
+            <Minus className={tallPm} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        {/* Play / Pause (bottom-left) */}
+        {!running ? (
+          <button
+            onClick={start}
+            disabled={fullMs === 0}
+            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center shadow-sm transition-colors ${tallPrimaryBtn}`}
+            aria-label="Start"
+            title="Start"
+          >
+            <Play className={`${tallPrimaryIcon} ml-0.5`} fill="currentColor" />
+          </button>
+        ) : (
+          <button
+            onClick={pause}
+            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center shadow-sm transition-colors ${tallPrimaryBtn}`}
+            aria-label="Pause"
+            title="Pause"
+          >
+            <Pause className={tallPrimaryIcon} fill="currentColor" />
+          </button>
+        )}
+
+        {/* Reset (bottom-right) */}
+        <button
+          onClick={reset}
+          className={`absolute bottom-[4cqmin] right-[4cqmin] rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors ${tallResetBtn}`}
+          aria-label="Reset"
+          title="Reset"
+        >
+          <Square className={tallResetIcon} />
+        </button>
+      </div>
+    );
+  }
+
+  // === WIDE layout =========================================================
+
   return (
     <div
+      ref={containerRef}
       className="relative h-full w-full flex items-center justify-between p-3 gap-3"
       style={{ containerType: 'size' as const }}
     >
@@ -190,9 +346,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
       >
         <DigitColumn value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
         <DigitColumn value={mOnes} onAdjust={(d) => adjustDigit(1, d)} disabled={running} />
-        <span className={`font-bold ${DIGIT_SIZE} leading-none mx-0.5 mb-[2cqh]`}>
-          :
-        </span>
+        <span className={`font-bold ${W_DIGIT} leading-none mx-0.5 mb-[2cqh]`}>:</span>
         <DigitColumn value={sTens} onAdjust={(d) => adjustDigit(2, d)} disabled={running} />
         <DigitColumn value={sOnes} onAdjust={(d) => adjustDigit(3, d)} disabled={running} />
       </div>
@@ -202,33 +356,33 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           <button
             onClick={start}
             disabled={fullMs === 0}
-            className={`rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center shadow-sm transition-colors ${ROUND_BUTTON_SIZE}`}
+            className={`rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center shadow-sm transition-colors ${W_BTN}`}
             aria-label="Start"
             title="Start"
           >
-            <Play className={`${PLAY_ICON_SIZE} ml-0.5`} fill="currentColor" />
+            <Play className={`${W_PLAY_ICON} ml-0.5`} fill="currentColor" />
           </button>
         ) : (
           <button
             onClick={pause}
-            className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center shadow-sm transition-colors ${ROUND_BUTTON_SIZE}`}
+            className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center shadow-sm transition-colors ${W_BTN}`}
             aria-label="Pause"
             title="Pause"
           >
-            <Pause className={PLAY_ICON_SIZE} fill="currentColor" />
+            <Pause className={W_PLAY_ICON} fill="currentColor" />
           </button>
         )}
         <button
           onClick={reset}
-          className={`rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors ${RESET_BUTTON_SIZE}`}
+          className={`rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors ${W_RESET_BTN}`}
           aria-label="Reset"
           title="Reset"
         >
-          <Square className={RESET_ICON_SIZE} />
+          <Square className={W_RESET_ICON} />
         </button>
       </div>
 
-      {/* Thin progress bar at the bottom (replaces the previous left-side ring). */}
+      {/* Thin progress bar at the bottom (wide layout only) */}
       <div
         className="absolute left-0 right-0 bottom-0 h-1 bg-slate-100/60 pointer-events-none"
         aria-hidden
