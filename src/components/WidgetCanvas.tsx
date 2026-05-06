@@ -1,6 +1,7 @@
 import { Rnd } from 'react-rnd';
 import { useAppStore } from '../store/store';
 import WidgetTile from './WidgetTile';
+import WidgetChrome from './WidgetChrome';
 
 export default function WidgetCanvas() {
   const widgets = useAppStore((s) => s.current.widgets);
@@ -9,16 +10,17 @@ export default function WidgetCanvas() {
   const focusWidget = useAppStore((s) => s.focusWidget);
 
   return (
-    <div className="absolute inset-0 pt-12">
+    <div className="absolute inset-0">
       {widgets.map((w) => (
         <Rnd
           key={w.id}
+          className="group"
           position={{ x: w.position.x, y: w.position.y }}
           size={{ width: w.size.width, height: w.size.height }}
-          dragHandleClassName="drag-handle"
           bounds="parent"
           minWidth={120}
           minHeight={80}
+          cancel="input,textarea,select,button,a,canvas"
           style={{ zIndex: w.zIndex }}
           onDragStart={() => focusWidget(w.id)}
           onDragStop={(_e, d) => updatePos(w.id, d.x, d.y)}
@@ -27,6 +29,7 @@ export default function WidgetCanvas() {
             updatePos(w.id, pos.x, pos.y);
           }}
         >
+          <WidgetChrome instance={w} />
           <WidgetTile instance={w} />
         </Rnd>
       ))}

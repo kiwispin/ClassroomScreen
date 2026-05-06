@@ -1,5 +1,5 @@
-import { Cog } from 'lucide-react';
 import SettingsPopover from '../../components/SettingsPopover';
+import SettingsTriggerButton from '../../components/SettingsTriggerButton';
 import { useAppStore } from '../../store/store';
 import type { WidgetSettingsProps } from '../Demo/meta';
 
@@ -35,15 +35,7 @@ export default function ClockSettings({ instance }: WidgetSettingsProps) {
   return (
     <SettingsPopover
       trigger={(open) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            open();
-          }}
-          className="h-5 w-5 rounded hover:bg-slate-200 flex items-center justify-center"
-          aria-label="Clock settings"
-          title="Settings"
-        ><Cog className="w-3.5 h-3.5" strokeWidth={2} /></button>
+        <SettingsTriggerButton open={open} label="Clock settings" />
       )}
     >
       {() => (
