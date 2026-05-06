@@ -27,7 +27,7 @@ export default function WidgetTile({ instance }: { instance: WidgetInstance }) {
 
   return (
     <div
-      className="h-full w-full rounded-xl shadow-md ring-1 ring-slate-200/70 overflow-hidden"
+      className="h-full w-full rounded-xl shadow-md ring-1 ring-slate-200/70 overflow-hidden transition-shadow group-hover:ring-2 group-hover:ring-indigo-400"
       style={tileStyle}
     >
       <Component instance={instance} />
