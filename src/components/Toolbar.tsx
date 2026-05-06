@@ -67,6 +67,7 @@ export default function Toolbar() {
             Icon={w.Icon}
             label={w.label.toLowerCase()}
             title={`Add ${w.label}`}
+            iconColor={w.iconColor}
             onClick={() => addWidget(w.type)}
           />
         ))}
@@ -89,6 +90,7 @@ export default function Toolbar() {
                     Icon={w.Icon}
                     label={w.label.toLowerCase()}
                     title={`Add ${w.label}`}
+                    iconColor={w.iconColor}
                     onClick={() => {
                       addWidget(w.type);
                       close();

@@ -7,4 +7,5 @@ export const trafficLightMeta: WidgetMeta = {
   Icon: Lightbulb,
   defaultSize: { width: 160, height: 360 },
   defaultConfig: { active: 'red' },
+  iconColor: 'text-red-500',
 };

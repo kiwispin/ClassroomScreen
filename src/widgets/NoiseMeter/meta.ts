@@ -10,4 +10,5 @@ export const noiseMeterMeta: WidgetMeta = {
   defaultConfig: { threshold: 0.5 },
   Settings: NoiseMeterSettings,
   secondary: true,
+  iconColor: 'text-cyan-500',
 };

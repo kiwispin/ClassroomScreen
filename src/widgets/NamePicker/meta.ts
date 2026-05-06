@@ -9,4 +9,5 @@ export const namePickerMeta: WidgetMeta = {
   defaultSize: { width: 320, height: 200 },
   defaultConfig: { namesText: '', removePicked: false, picked: [] },
   Settings: NamePickerSettings,
+  iconColor: 'text-fuchsia-500',
 };

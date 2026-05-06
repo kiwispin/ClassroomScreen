@@ -9,4 +9,5 @@ export const diceMeta: WidgetMeta = {
   defaultSize: { width: 320, height: 200 },
   defaultConfig: { mode: 'dice', count: 2, min: 1, max: 100 },
   Settings: DiceSettings,
+  iconColor: 'text-rose-500',
 };

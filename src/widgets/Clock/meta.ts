@@ -9,4 +9,5 @@ export const clockMeta: WidgetMeta = {
   defaultSize: { width: 280, height: 140 },
   defaultConfig: { format24: true, showSeconds: false, showDate: true },
   Settings: ClockSettings,
+  iconColor: 'text-sky-500',
 };

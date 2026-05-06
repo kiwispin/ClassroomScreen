@@ -7,4 +7,5 @@ export const stopwatchMeta: WidgetMeta = {
   Icon: Hourglass,
   defaultSize: { width: 280, height: 180 },
   defaultConfig: { running: false, startedAt: null, accumulatedMs: 0 },
+  iconColor: 'text-indigo-500',
 };

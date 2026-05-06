@@ -9,4 +9,5 @@ export const notepadMeta: WidgetMeta = {
   defaultSize: { width: 360, height: 240 },
   defaultConfig: { text: '', fontSize: 16 },
   Settings: NotepadSettings,
+  iconColor: 'text-amber-500',
 };

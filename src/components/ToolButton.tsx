@@ -6,11 +6,12 @@ type Props = {
   label: string;
   title?: string;
   active?: boolean;
+  iconColor?: string; // tailwind text-* class for inactive state
   onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
 };
 
 const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
-  { Icon, label, title, active, onClick },
+  { Icon, label, title, active, iconColor, onClick },
   ref,
 ) {
   return (
@@ -26,7 +27,10 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
       }
     >
       <Icon
-        className={'w-6 h-6 ' + (active ? 'stroke-indigo-600' : 'stroke-slate-700')}
+        className={
+          'w-6 h-6 ' +
+          (active ? 'text-indigo-600' : iconColor ?? 'text-slate-700')
+        }
         strokeWidth={1.75}
       />
       <span

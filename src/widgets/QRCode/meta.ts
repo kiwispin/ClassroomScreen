@@ -9,4 +9,5 @@ export const qrCodeMeta: WidgetMeta = {
   defaultSize: { width: 240, height: 280 },
   defaultConfig: { url: '', caption: '' },
   Settings: QRCodeSettings,
+  iconColor: 'text-slate-700',
 };

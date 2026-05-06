@@ -10,4 +10,5 @@ export const videoEmbedMeta: WidgetMeta = {
   defaultConfig: { url: '' },
   Settings: VideoEmbedSettings,
   secondary: true,
+  iconColor: 'text-rose-600',
 };

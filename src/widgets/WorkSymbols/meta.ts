@@ -7,4 +7,5 @@ export const workSymbolsMeta: WidgetMeta = {
   Icon: MessageSquare,
   defaultSize: { width: 360, height: 220 },
   defaultConfig: { active: null },
+  iconColor: 'text-violet-500',
 };

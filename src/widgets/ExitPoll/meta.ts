@@ -8,4 +8,5 @@ export const exitPollMeta: WidgetMeta = {
   defaultSize: { width: 360, height: 220 },
   defaultConfig: { up: 0, mid: 0, down: 0 },
   secondary: true,
+  iconColor: 'text-purple-500',
 };

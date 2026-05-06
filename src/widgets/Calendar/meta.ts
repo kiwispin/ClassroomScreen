@@ -9,4 +9,5 @@ export const calendarMeta: WidgetMeta = {
   defaultSize: { width: 280, height: 160 },
   defaultConfig: { showMonthGrid: false },
   Settings: CalendarSettings,
+  iconColor: 'text-pink-500',
 };

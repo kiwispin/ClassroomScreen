@@ -14,6 +14,9 @@ export type WidgetMeta = {
   Settings?: ComponentType<WidgetSettingsProps>;
   hidden?: boolean;
   secondary?: boolean; // when true, lives in the toolbar's "More" overflow
+  // Tailwind text-color class for the toolbar icon when inactive
+  // (e.g., "text-sky-500"). Falls back to slate.
+  iconColor?: string;
 };
 
 export const demoMeta: WidgetMeta = {

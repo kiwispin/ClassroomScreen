@@ -16,4 +16,5 @@ export const timerMeta: WidgetMeta = {
     autoReset: false,
   },
   Settings: TimerSettings,
+  iconColor: 'text-orange-500',
 };
