@@ -44,22 +44,22 @@ const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
       onClick={() => onAdjust(1)}
       disabled={disabled}
       tabIndex={-1}
-      className="text-slate-400 hover:text-slate-700 disabled:opacity-0 disabled:pointer-events-none transition-colors"
+      className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
       aria-label="Increase"
     >
-      <Plus className="w-[clamp(12px,3cqw,20px)] h-[clamp(12px,3cqw,20px)]" strokeWidth={2} />
+      <Plus className="w-[clamp(14px,4cqw,32px)] h-[clamp(14px,4cqw,32px)]" strokeWidth={2.5} />
     </button>
-    <div className="font-bold tabular-nums text-[clamp(36px,15cqw,108px)] leading-none">
+    <div className="font-bold tabular-nums text-[clamp(40px,22cqw,220px)] leading-none">
       {value}
     </div>
     <button
       onClick={() => onAdjust(-1)}
       disabled={disabled}
       tabIndex={-1}
-      className="text-slate-400 hover:text-slate-700 disabled:opacity-0 disabled:pointer-events-none transition-colors"
+      className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
       aria-label="Decrease"
     >
-      <Minus className="w-[clamp(12px,3cqw,20px)] h-[clamp(12px,3cqw,20px)]" strokeWidth={2} />
+      <Minus className="w-[clamp(14px,4cqw,32px)] h-[clamp(14px,4cqw,32px)]" strokeWidth={2.5} />
     </button>
   </div>
 );
@@ -205,7 +205,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
       >
         <DigitColumn value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
         <DigitColumn value={mOnes} onAdjust={(d) => adjustDigit(1, d)} disabled={running} />
-        <span className="font-bold text-[clamp(36px,15cqw,108px)] leading-none mx-0.5 mb-[3cqw]">
+        <span className="font-bold text-[clamp(40px,22cqw,220px)] leading-none mx-0.5 mb-[3cqw]">
           :
         </span>
         <DigitColumn value={sTens} onAdjust={(d) => adjustDigit(2, d)} disabled={running} />
@@ -217,29 +217,29 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           <button
             onClick={start}
             disabled={fullMs === 0}
-            className="rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center w-[clamp(32px,11cqw,56px)] h-[clamp(32px,11cqw,56px)] shadow-sm transition-colors"
+            className="rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center w-[clamp(36px,14cqw,96px)] h-[clamp(36px,14cqw,96px)] shadow-sm transition-colors"
             aria-label="Start"
             title="Start"
           >
-            <Play className="w-[clamp(14px,5cqw,24px)] h-[clamp(14px,5cqw,24px)] ml-0.5" fill="currentColor" />
+            <Play className="w-[clamp(16px,6cqw,42px)] h-[clamp(16px,6cqw,42px)] ml-0.5" fill="currentColor" />
           </button>
         ) : (
           <button
             onClick={pause}
-            className="rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center w-[clamp(32px,11cqw,56px)] h-[clamp(32px,11cqw,56px)] shadow-sm transition-colors"
+            className="rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center w-[clamp(36px,14cqw,96px)] h-[clamp(36px,14cqw,96px)] shadow-sm transition-colors"
             aria-label="Pause"
             title="Pause"
           >
-            <Pause className="w-[clamp(14px,5cqw,24px)] h-[clamp(14px,5cqw,24px)]" fill="currentColor" />
+            <Pause className="w-[clamp(16px,6cqw,42px)] h-[clamp(16px,6cqw,42px)]" fill="currentColor" />
           </button>
         )}
         <button
           onClick={reset}
-          className="rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center w-[clamp(28px,9cqw,44px)] h-[clamp(28px,9cqw,44px)] transition-colors"
+          className="rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center w-[clamp(28px,11cqw,68px)] h-[clamp(28px,11cqw,68px)] transition-colors"
           aria-label="Reset"
           title="Reset"
         >
-          <Square className="w-[clamp(10px,3.5cqw,18px)] h-[clamp(10px,3.5cqw,18px)]" />
+          <Square className="w-[clamp(12px,4.5cqw,28px)] h-[clamp(12px,4.5cqw,28px)]" />
         </button>
       </div>
     </div>
