@@ -9,4 +9,5 @@ export const noiseMeterMeta: WidgetMeta = {
   defaultSize: { width: 240, height: 240 },
   defaultConfig: { threshold: 0.5 },
   Settings: NoiseMeterSettings,
+  secondary: true,
 };

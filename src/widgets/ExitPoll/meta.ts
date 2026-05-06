@@ -7,4 +7,5 @@ export const exitPollMeta: WidgetMeta = {
   Icon: Vote,
   defaultSize: { width: 360, height: 220 },
   defaultConfig: { up: 0, mid: 0, down: 0 },
+  secondary: true,
 };

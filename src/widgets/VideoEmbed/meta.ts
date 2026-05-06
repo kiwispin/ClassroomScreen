@@ -9,4 +9,5 @@ export const videoEmbedMeta: WidgetMeta = {
   defaultSize: { width: 480, height: 280 },
   defaultConfig: { url: '' },
   Settings: VideoEmbedSettings,
+  secondary: true,
 };

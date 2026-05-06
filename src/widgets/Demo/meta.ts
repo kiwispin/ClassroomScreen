@@ -13,6 +13,7 @@ export type WidgetMeta = {
   defaultConfig: Record<string, unknown>;
   Settings?: ComponentType<WidgetSettingsProps>;
   hidden?: boolean;
+  secondary?: boolean; // when true, lives in the toolbar's "More" overflow
 };
 
 export const demoMeta: WidgetMeta = {

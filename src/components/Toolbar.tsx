@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Pencil } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Pencil, LayoutGrid } from 'lucide-react';
 import { allWidgets } from '../widgets/registry';
 import { useAppStore } from '../store/store';
 import BackgroundPicker from '../overlays/Background/Picker';
 import PresetMenu from './PresetMenu';
 import ToolButton from './ToolButton';
+import SettingsPopover from './SettingsPopover';
 
 const IDLE_MS = 4_000;
 
@@ -13,6 +14,11 @@ export default function Toolbar() {
   const annotateOpen = useAppStore((s) => s.annotateOpen);
   const toggleAnnotate = useAppStore((s) => s.toggleAnnotate);
   const pinned = useAppStore((s) => s.toolbarPinned);
+
+  const { primary, secondary } = useMemo(() => ({
+    primary: allWidgets.filter((w) => !w.secondary),
+    secondary: allWidgets.filter((w) => w.secondary),
+  }), []);
 
   const [visible, setVisible] = useState(true);
 
@@ -55,7 +61,7 @@ export default function Toolbar() {
           onClick={toggleAnnotate}
         />
         <div className="shrink-0 w-px h-8 bg-slate-200/80 mx-1" />
-        {allWidgets.map((w) => (
+        {primary.map((w) => (
           <ToolButton
             key={w.type}
             Icon={w.Icon}
@@ -64,6 +70,35 @@ export default function Toolbar() {
             onClick={() => addWidget(w.type)}
           />
         ))}
+        {secondary.length > 0 && (
+          <SettingsPopover
+            trigger={(open) => (
+              <ToolButton
+                Icon={LayoutGrid}
+                label="more"
+                title={`More widgets (${secondary.length})`}
+                onClick={open}
+              />
+            )}
+          >
+            {(close) => (
+              <div className="grid grid-cols-3 gap-0.5 w-[12rem]">
+                {secondary.map((w) => (
+                  <ToolButton
+                    key={w.type}
+                    Icon={w.Icon}
+                    label={w.label.toLowerCase()}
+                    title={`Add ${w.label}`}
+                    onClick={() => {
+                      addWidget(w.type);
+                      close();
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </SettingsPopover>
+        )}
         <div className="shrink-0 w-px h-8 bg-slate-200/80 mx-1" />
         <PresetMenu />
         <BackgroundPicker />
