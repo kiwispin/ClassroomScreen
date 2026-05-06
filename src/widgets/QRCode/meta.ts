@@ -10,4 +10,5 @@ export const qrCodeMeta: WidgetMeta = {
   defaultConfig: { url: '', caption: '' },
   Settings: QRCodeSettings,
   iconColor: 'text-slate-700',
+  secondary: true,
 };

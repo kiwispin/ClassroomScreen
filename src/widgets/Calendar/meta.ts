@@ -10,4 +10,5 @@ export const calendarMeta: WidgetMeta = {
   defaultConfig: { showMonthGrid: false },
   Settings: CalendarSettings,
   iconColor: 'text-pink-500',
+  secondary: true,
 };

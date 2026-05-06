@@ -10,4 +10,5 @@ export const imageEmbedMeta: WidgetMeta = {
   defaultConfig: { source: 'url', url: '', fit: 'contain' },
   Settings: ImageEmbedSettings,
   iconColor: 'text-emerald-500',
+  secondary: true,
 };
