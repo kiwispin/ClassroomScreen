@@ -47,9 +47,9 @@ const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
       className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
       aria-label="Increase"
     >
-      <Plus className="w-[clamp(14px,4cqw,32px)] h-[clamp(14px,4cqw,32px)]" strokeWidth={2.5} />
+      <Plus className="w-[clamp(14px,min(3cqw,8cqh),28px)] h-[clamp(14px,min(3cqw,8cqh),28px)]" strokeWidth={2.5} />
     </button>
-    <div className="font-bold tabular-nums text-[clamp(40px,22cqw,220px)] leading-none">
+    <div className="font-bold tabular-nums text-[clamp(36px,min(13cqw,38cqh),180px)] leading-none">
       {value}
     </div>
     <button
@@ -59,7 +59,7 @@ const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
       className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
       aria-label="Decrease"
     >
-      <Minus className="w-[clamp(14px,4cqw,32px)] h-[clamp(14px,4cqw,32px)]" strokeWidth={2.5} />
+      <Minus className="w-[clamp(14px,min(3cqw,8cqh),28px)] h-[clamp(14px,min(3cqw,8cqh),28px)]" strokeWidth={2.5} />
     </button>
   </div>
 );
@@ -191,7 +191,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
   return (
     <div
       className="h-full w-full flex items-center p-3 gap-3"
-      style={{ containerType: 'inline-size' as const }}
+      style={{ containerType: 'size' as const }}
     >
       <div className="aspect-square h-full max-w-[30%] flex items-center justify-center shrink-0">
         <ProgressRing fraction={fraction} />
@@ -199,13 +199,13 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
 
       <div
         className={
-          'flex-1 flex items-center justify-center gap-1 ' +
+          'flex-1 min-w-0 flex items-center justify-center gap-1 overflow-hidden ' +
           (flash ? 'text-rose-500 animate-pulse' : '')
         }
       >
         <DigitColumn value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
         <DigitColumn value={mOnes} onAdjust={(d) => adjustDigit(1, d)} disabled={running} />
-        <span className="font-bold text-[clamp(40px,22cqw,220px)] leading-none mx-0.5 mb-[3cqw]">
+        <span className="font-bold text-[clamp(36px,min(13cqw,38cqh),180px)] leading-none mx-0.5 mb-[2cqh]">
           :
         </span>
         <DigitColumn value={sTens} onAdjust={(d) => adjustDigit(2, d)} disabled={running} />
@@ -217,29 +217,29 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           <button
             onClick={start}
             disabled={fullMs === 0}
-            className="rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center w-[clamp(36px,14cqw,96px)] h-[clamp(36px,14cqw,96px)] shadow-sm transition-colors"
+            className="rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center w-[clamp(36px,min(10cqw,28cqh),80px)] h-[clamp(36px,min(10cqw,28cqh),80px)] shadow-sm transition-colors"
             aria-label="Start"
             title="Start"
           >
-            <Play className="w-[clamp(16px,6cqw,42px)] h-[clamp(16px,6cqw,42px)] ml-0.5" fill="currentColor" />
+            <Play className="w-[clamp(16px,min(4cqw,12cqh),36px)] h-[clamp(16px,min(4cqw,12cqh),36px)] ml-0.5" fill="currentColor" />
           </button>
         ) : (
           <button
             onClick={pause}
-            className="rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center w-[clamp(36px,14cqw,96px)] h-[clamp(36px,14cqw,96px)] shadow-sm transition-colors"
+            className="rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center w-[clamp(36px,min(10cqw,28cqh),80px)] h-[clamp(36px,min(10cqw,28cqh),80px)] shadow-sm transition-colors"
             aria-label="Pause"
             title="Pause"
           >
-            <Pause className="w-[clamp(16px,6cqw,42px)] h-[clamp(16px,6cqw,42px)]" fill="currentColor" />
+            <Pause className="w-[clamp(16px,min(4cqw,12cqh),36px)] h-[clamp(16px,min(4cqw,12cqh),36px)]" fill="currentColor" />
           </button>
         )}
         <button
           onClick={reset}
-          className="rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center w-[clamp(28px,11cqw,68px)] h-[clamp(28px,11cqw,68px)] transition-colors"
+          className="rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center w-[clamp(28px,min(8cqw,22cqh),60px)] h-[clamp(28px,min(8cqw,22cqh),60px)] transition-colors"
           aria-label="Reset"
           title="Reset"
         >
-          <Square className="w-[clamp(12px,4.5cqw,28px)] h-[clamp(12px,4.5cqw,28px)]" />
+          <Square className="w-[clamp(12px,min(3cqw,9cqh),24px)] h-[clamp(12px,min(3cqw,9cqh),24px)]" />
         </button>
       </div>
     </div>
