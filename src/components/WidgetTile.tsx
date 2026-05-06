@@ -1,9 +1,13 @@
+import type { CSSProperties } from 'react';
 import type { WidgetInstance } from '../store/types';
 import { getWidgetComponent, getWidgetMeta } from '../widgets/registry';
+import { getTheme } from '../lib/themes';
 
 export default function WidgetTile({ instance }: { instance: WidgetInstance }) {
   const Component = getWidgetComponent(instance.type);
   const meta = getWidgetMeta(instance.type);
+  const themeId = (instance.config as { theme?: string }).theme;
+  const theme = getTheme(themeId);
 
   if (!Component || !meta) {
     return (
@@ -13,8 +17,19 @@ export default function WidgetTile({ instance }: { instance: WidgetInstance }) {
     );
   }
 
+  const tileStyle: CSSProperties & Record<`--${string}`, string> = {
+    background: theme.bg,
+    color: theme.text,
+    '--w-bg': theme.bg,
+    '--w-text': theme.text,
+    '--w-accent': theme.accent,
+  };
+
   return (
-    <div className="h-full w-full rounded-xl shadow-md ring-1 ring-slate-200/70 bg-white overflow-hidden">
+    <div
+      className="h-full w-full rounded-xl shadow-md ring-1 ring-slate-200/70 overflow-hidden"
+      style={tileStyle}
+    >
       <Component instance={instance} />
     </div>
   );

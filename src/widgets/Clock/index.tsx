@@ -44,7 +44,7 @@ export default function Clock({ instance }: { instance: WidgetInstance }) {
 
   return (
     <div
-      className="h-full w-full flex flex-col items-center justify-center bg-white text-slate-800 select-none"
+      className="h-full w-full flex flex-col items-center justify-center select-none"
       style={{ containerType: 'inline-size' as const }}
     >
       <div className="font-bold tabular-nums text-[clamp(28px,18cqw,128px)]">

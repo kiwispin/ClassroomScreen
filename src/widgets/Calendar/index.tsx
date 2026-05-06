@@ -41,7 +41,7 @@ export default function Calendar({ instance }: { instance: WidgetInstance }) {
 
   return (
     <div
-      className="h-full w-full flex flex-col items-center justify-center bg-white text-slate-800 select-none p-3 gap-1"
+      className="h-full w-full flex flex-col items-center justify-center select-none p-3 gap-1"
       style={{ containerType: 'inline-size' as const }}
     >
       <div className="text-[clamp(20px,8cqw,42px)] font-semibold">{weekday}</div>

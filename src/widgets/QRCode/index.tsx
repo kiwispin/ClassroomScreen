@@ -9,7 +9,7 @@ export default function QRCodeWidget({ instance }: { instance: WidgetInstance })
   const caption = cfg.caption ?? '';
 
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center bg-white p-3 gap-2">
+    <div className="h-full w-full flex flex-col items-center justify-center p-3 gap-2">
       {url ? (
         <>
           <div className="flex-1 min-h-0 flex items-center justify-center">

@@ -71,7 +71,7 @@ export default function NoiseMeter({ instance }: { instance: WidgetInstance }) {
   const pct = Math.round(level * 100);
 
   return (
-    <div className="h-full w-full flex flex-col bg-white p-3 gap-2">
+    <div className="h-full w-full flex flex-col p-3 gap-2">
       {status !== 'running' ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center">
           {status === 'denied' ? (

@@ -37,7 +37,7 @@ export default function Dice({ instance }: { instance: WidgetInstance }) {
 
   return (
     <div
-      className="h-full w-full flex flex-col items-center justify-center bg-white text-slate-800 select-none gap-2 p-2"
+      className="h-full w-full flex flex-col items-center justify-center select-none gap-2 p-2"
       style={{ containerType: 'inline-size' as const }}
     >
       {mode === 'dice' ? (

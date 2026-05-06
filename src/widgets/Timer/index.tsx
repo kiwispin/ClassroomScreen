@@ -49,7 +49,7 @@ const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
     >
       <Plus className="w-[clamp(12px,3cqw,20px)] h-[clamp(12px,3cqw,20px)]" strokeWidth={2} />
     </button>
-    <div className="font-bold tabular-nums text-slate-800 text-[clamp(36px,15cqw,108px)] leading-none">
+    <div className="font-bold tabular-nums text-[clamp(36px,15cqw,108px)] leading-none">
       {value}
     </div>
     <button
@@ -190,7 +190,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
 
   return (
     <div
-      className="h-full w-full flex items-center bg-white p-3 gap-3"
+      className="h-full w-full flex items-center p-3 gap-3"
       style={{ containerType: 'inline-size' as const }}
     >
       <div className="aspect-square h-full max-w-[30%] flex items-center justify-center shrink-0">
@@ -205,7 +205,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
       >
         <DigitColumn value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
         <DigitColumn value={mOnes} onAdjust={(d) => adjustDigit(1, d)} disabled={running} />
-        <span className="font-bold text-slate-800 text-[clamp(36px,15cqw,108px)] leading-none mx-0.5 mb-[3cqw]">
+        <span className="font-bold text-[clamp(36px,15cqw,108px)] leading-none mx-0.5 mb-[3cqw]">
           :
         </span>
         <DigitColumn value={sTens} onAdjust={(d) => adjustDigit(2, d)} disabled={running} />

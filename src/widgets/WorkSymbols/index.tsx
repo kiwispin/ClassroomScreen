@@ -20,7 +20,7 @@ export default function WorkSymbols({ instance }: { instance: WidgetInstance }) 
   const active = cfg.active ?? null;
 
   return (
-    <div className="h-full w-full grid grid-cols-3 gap-2 p-2 bg-white">
+    <div className="h-full w-full grid grid-cols-3 gap-2 p-2 ">
       {SYMBOLS.map((s) => {
         const on = active === s.key;
         return (

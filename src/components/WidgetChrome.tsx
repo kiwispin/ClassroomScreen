@@ -2,10 +2,12 @@ import { Trash2 } from 'lucide-react';
 import type { WidgetInstance } from '../store/types';
 import { useAppStore } from '../store/store';
 import { getWidgetMeta } from '../widgets/registry';
+import ThemePicker from './ThemePicker';
 
 export default function WidgetChrome({ instance }: { instance: WidgetInstance }) {
   const removeWidget = useAppStore((s) => s.removeWidget);
   const meta = getWidgetMeta(instance.type);
+  const currentTheme = (instance.config as { theme?: string }).theme;
 
   let SettingsBtn: React.ReactNode = null;
   if (meta?.Settings) {
@@ -13,11 +15,6 @@ export default function WidgetChrome({ instance }: { instance: WidgetInstance })
     SettingsBtn = <Settings instance={instance} />;
   }
 
-  // Outer wrapper is always interactive: it acts as a hover bridge so the
-  // mouse can travel from the tile up to the chrome without passing through
-  // a "dead" zone that fades the chrome out.
-  // Named group `chrome` keeps the chrome visible while the mouse is inside
-  // the wrapper itself (covers the gap + the visible pill).
   return (
     <div
       className="absolute -top-10 left-1/2 -translate-x-1/2 z-[110] pb-3 group/chrome"
@@ -42,6 +39,7 @@ export default function WidgetChrome({ instance }: { instance: WidgetInstance })
         >
           <Trash2 className="w-4 h-4" strokeWidth={1.75} />
         </button>
+        <ThemePicker instanceId={instance.id} currentTheme={currentTheme} />
         {SettingsBtn}
       </div>
     </div>

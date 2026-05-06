@@ -32,7 +32,7 @@ export default function ExitPoll({ instance }: { instance: WidgetInstance }) {
 
   return (
     <div
-      className="h-full w-full flex flex-col bg-white p-2 gap-2"
+      className="h-full w-full flex flex-col p-2 gap-2"
       style={{ containerType: 'inline-size' as const }}
     >
       <div className="flex-1 grid grid-cols-3 gap-2 min-h-0">

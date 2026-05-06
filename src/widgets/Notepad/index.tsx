@@ -14,7 +14,7 @@ export default function Notepad({ instance }: { instance: WidgetInstance }) {
       value={text}
       onChange={(e) => updateConfig(instance.id, { text: e.target.value })}
       placeholder="Type a note for the class…"
-      className="h-full w-full resize-none p-3 outline-none bg-yellow-50 text-slate-800 placeholder:text-slate-400"
+      className="h-full w-full resize-none p-3 outline-none bg-transparent placeholder:text-slate-400"
       style={{ fontSize: `${fontSize}px`, lineHeight: 1.4 }}
     />
   );
