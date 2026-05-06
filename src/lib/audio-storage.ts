@@ -1,7 +1,10 @@
 import { get, set, del, keys, createStore } from 'idb-keyval';
 import { newId } from './uuid';
 
-const audioStore = createStore('classroomscreen', 'audio');
+// idb-keyval's createStore puts one object store per database; reusing the
+// existing 'classroomscreen' DB would fail with "object store not found"
+// because that DB was created at v1 with only 'images'. Use a separate DB.
+const audioStore = createStore('classroomscreen-audio', 'audio');
 
 type StoredAudio = {
   data: ArrayBuffer;
