@@ -81,14 +81,19 @@ const ProgressRing = ({ fraction }: { fraction: number }) => {
   const c = 2 * Math.PI * r;
   const safe = Math.max(0, Math.min(1, fraction));
   return (
-    <svg viewBox="0 0 100 100" className="w-full h-full" aria-hidden>
+    <svg
+      viewBox="0 0 100 100"
+      className="w-full h-full"
+      style={{ color: 'var(--w-accent, #6366f1)' }}
+      aria-hidden
+    >
       <circle cx="50" cy="50" r={r} fill="none" stroke="rgb(241 245 249)" strokeWidth="6" />
       <circle
         cx="50"
         cy="50"
         r={r}
         fill="none"
-        stroke="rgb(99 102 241)"
+        stroke="currentColor"
         strokeWidth="6"
         strokeDasharray={c}
         strokeDashoffset={c * (1 - safe)}
@@ -314,7 +319,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           <button
             onClick={start}
             disabled={fullMs === 0}
-            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${tallPrimaryBtn}`}
+            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${tallPrimaryBtn}`}
             aria-label="Start"
             title="Start"
           >
@@ -375,7 +380,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
             <button
               onClick={start}
               disabled={fullMs === 0}
-              className={`rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${W_BTN}`}
+              className={`rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${W_BTN}`}
               aria-label="Start"
               title="Start"
             >
@@ -430,7 +435,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           <button
             onClick={start}
             disabled={fullMs === 0}
-            className={`rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${W_BTN}`}
+            className={`rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${W_BTN}`}
             aria-label="Start"
             title="Start"
           >
@@ -462,9 +467,10 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         aria-hidden
       >
         <div
-          className="h-full bg-indigo-500"
+          className="h-full"
           style={{
             width: `${Math.round(elapsedFraction * 100)}%`,
+            background: 'var(--w-accent, #6366f1)',
             transition: 'width 200ms linear',
           }}
         />

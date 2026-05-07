@@ -44,13 +44,17 @@ export default function Clock({ instance }: { instance: WidgetInstance }) {
 
   return (
     <div
-      className="h-full w-full flex flex-col items-center justify-center select-none"
-      style={{ containerType: 'inline-size' as const }}
+      className="h-full w-full flex flex-col items-center justify-center select-none gap-1 p-3"
+      style={{ containerType: 'size' as const }}
     >
-      <div className="font-bold tabular-nums text-[clamp(28px,18cqw,128px)]">
+      <div className="font-bold tabular-nums leading-none text-[clamp(32px,min(20cqw,46cqh),260px)]">
         {time}
       </div>
-      {showDate && <div className="text-sm text-slate-500 mt-1">{date}</div>}
+      {showDate && (
+        <div className="opacity-60 text-[clamp(11px,min(4cqw,9cqh),28px)]">
+          {date}
+        </div>
+      )}
     </div>
   );
 }

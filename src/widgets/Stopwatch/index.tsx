@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Play, Pause, Square } from 'lucide-react';
 import type { WidgetInstance } from '../../store/types';
 import { useAppStore } from '../../store/store';
 import { elapsedMs, formatStopwatch, type StopwatchState } from './logic';
@@ -8,6 +9,12 @@ export type StopwatchConfig = {
   startedAt?: number | null;
   accumulatedMs?: number;
 };
+
+const DIGIT_SIZE = 'text-[clamp(36px,min(18cqw,46cqh),280px)]';
+const BTN_SIZE = 'w-[clamp(36px,min(11cqw,28cqh),96px)] h-[clamp(36px,min(11cqw,28cqh),96px)]';
+const PLAY_ICON_SIZE = 'w-[clamp(12px,min(3.6cqw,9cqh),34px)] h-[clamp(12px,min(3.6cqw,9cqh),34px)]';
+const RESET_BTN_SIZE = 'w-[clamp(28px,min(8cqw,22cqh),68px)] h-[clamp(28px,min(8cqw,22cqh),68px)]';
+const RESET_ICON_SIZE = 'w-[clamp(10px,min(2.5cqw,6cqh),20px)] h-[clamp(10px,min(2.5cqw,6cqh),20px)]';
 
 export default function Stopwatch({ instance }: { instance: WidgetInstance }) {
   const updateConfig = useAppStore((s) => s.updateWidgetConfig);
@@ -45,33 +52,42 @@ export default function Stopwatch({ instance }: { instance: WidgetInstance }) {
 
   return (
     <div
-      className="h-full w-full flex flex-col items-center justify-center select-none gap-2 p-2"
-      style={{ containerType: 'inline-size' as const }}
+      className="relative h-full w-full flex items-center justify-between p-3 gap-3"
+      style={{ containerType: 'size' as const }}
     >
-      <div className="font-bold tabular-nums text-[clamp(28px,16cqw,128px)]">
-        {formatStopwatch(elapsed)}
+      <div className="flex-1 min-w-0 flex items-center justify-center overflow-hidden">
+        <div className={`font-bold tabular-nums leading-none ${DIGIT_SIZE}`}>
+          {formatStopwatch(elapsed)}
+        </div>
       </div>
-      <div className="flex gap-1">
+
+      <div className="flex flex-col items-center justify-center gap-1.5 shrink-0">
         {!state.running ? (
           <button
             onClick={start}
-            className="px-3 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 text-sm"
+            className={`rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 text-white flex items-center justify-center transition-colors ${BTN_SIZE}`}
+            aria-label="Start"
+            title="Start"
           >
-            Start
+            <Play className={`${PLAY_ICON_SIZE} ml-0.5`} fill="currentColor" />
           </button>
         ) : (
           <button
             onClick={pause}
-            className="px-3 py-1 rounded bg-amber-500 text-white hover:bg-amber-600 text-sm"
+            className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-colors ${BTN_SIZE}`}
+            aria-label="Pause"
+            title="Pause"
           >
-            Pause
+            <Pause className={PLAY_ICON_SIZE} fill="currentColor" />
           </button>
         )}
         <button
           onClick={reset}
-          className="px-3 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 text-sm"
+          className={`rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors ${RESET_BTN_SIZE}`}
+          aria-label="Reset"
+          title="Reset"
         >
-          Reset
+          <Square className={RESET_ICON_SIZE} />
         </button>
       </div>
     </div>
