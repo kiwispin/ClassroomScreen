@@ -3,14 +3,17 @@ import { useAppStore } from '../../store/store';
 
 export type TrafficLightConfig = { active?: 'red' | 'yellow' | 'green' };
 
-const COLORS: Array<{
+type Color = {
   key: 'red' | 'yellow' | 'green';
   on: string;
   off: string;
-}> = [
-  { key: 'red',    on: 'bg-red-500',    off: 'bg-red-200' },
-  { key: 'yellow', on: 'bg-yellow-400', off: 'bg-yellow-100' },
-  { key: 'green',  on: 'bg-green-500',  off: 'bg-green-200' },
+  glow: string;
+};
+
+const COLORS: Color[] = [
+  { key: 'red',    on: 'bg-red-500',    off: 'bg-red-900',    glow: 'rgba(239,68,68,0.55)' },
+  { key: 'yellow', on: 'bg-amber-400',  off: 'bg-amber-900',  glow: 'rgba(251,191,36,0.55)' },
+  { key: 'green',  on: 'bg-emerald-500',off: 'bg-emerald-900',glow: 'rgba(16,185,129,0.55)' },
 ];
 
 export default function TrafficLight({ instance }: { instance: WidgetInstance }) {
@@ -20,28 +23,36 @@ export default function TrafficLight({ instance }: { instance: WidgetInstance })
 
   return (
     <div
-      className="h-full w-full flex items-center justify-center bg-slate-900 p-2"
-      style={{ containerType: 'inline-size' as const }}
+      className="h-full w-full flex items-center justify-center bg-slate-900 p-3"
+      style={{ containerType: 'size' as const }}
     >
-      <div className="flex flex-col gap-2 items-center justify-center h-full">
-        {COLORS.map((c) => (
-          <button
-            key={c.key}
-            onClick={() => updateConfig(instance.id, { active: c.key })}
-            className={
-              'rounded-full transition-all ' +
-              (active === c.key
-                ? c.on + ' shadow-[0_0_24px_rgba(255,255,255,0.45)]'
-                : c.off + ' opacity-60')
-            }
-            style={{
-              width: 'min(28cqw, 72px)',
-              height: 'min(28cqw, 72px)',
-            }}
-            aria-label={c.key}
-            aria-pressed={active === c.key}
-          />
-        ))}
+      <div
+        className="flex flex-col items-center justify-center rounded-2xl ring-1 ring-white/10"
+        style={{
+          padding: 'min(4cqi,4cqb)',
+          gap: 'min(3cqi,3cqb)',
+        }}
+      >
+        {COLORS.map((c) => {
+          const on = active === c.key;
+          return (
+            <button
+              key={c.key}
+              onClick={() => updateConfig(instance.id, { active: c.key })}
+              className={
+                'rounded-full transition-all duration-200 ' +
+                (on ? c.on : c.off + ' opacity-60')
+              }
+              style={{
+                width: 'min(60cqi,22cqb)',
+                height: 'min(60cqi,22cqb)',
+                boxShadow: on ? `0 0 calc(min(8cqi,8cqb)) ${c.glow}` : 'none',
+              }}
+              aria-label={c.key}
+              aria-pressed={on}
+            />
+          );
+        })}
       </div>
     </div>
   );

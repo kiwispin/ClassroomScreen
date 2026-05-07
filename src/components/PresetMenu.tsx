@@ -1,16 +1,23 @@
-import { useState } from 'react';
-import { Folder } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Folder, Plus, Save, Pencil, Trash2, Download, Upload } from 'lucide-react';
 import SettingsPopover from './SettingsPopover';
 import NamePromptDialog from './NamePromptDialog';
 import ConfirmDialog from './ConfirmDialog';
 import ToolButton from './ToolButton';
 import { useAppStore } from '../store/store';
+import { exportToFile, importFromFile, type ImportResult } from '../lib/preset-io';
 
 type Mode =
   | { kind: 'none' }
   | { kind: 'save-as' }
   | { kind: 'rename'; id: string; current: string }
   | { kind: 'delete'; id: string; name: string };
+
+type Status =
+  | { kind: 'idle' }
+  | { kind: 'busy'; message: string }
+  | { kind: 'ok'; message: string }
+  | { kind: 'error'; message: string };
 
 export default function PresetMenu() {
   const presets = useAppStore((s) => s.presets);
@@ -22,9 +29,50 @@ export default function PresetMenu() {
   const deletePreset = useAppStore((s) => s.deletePreset);
 
   const [mode, setMode] = useState<Mode>({ kind: 'none' });
-  const close = () => setMode({ kind: 'none' });
+  const [status, setStatus] = useState<Status>({ kind: 'idle' });
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const close = () => setMode({ kind: 'none' });
   const activeName = presets.find((p) => p.id === activeId)?.name ?? null;
+
+  const showStatus = (next: Status, autoClearMs = 3000) => {
+    setStatus(next);
+    if (next.kind === 'ok' || next.kind === 'error') {
+      setTimeout(() => {
+        setStatus((cur) => (cur === next ? { kind: 'idle' } : cur));
+      }, autoClearMs);
+    }
+  };
+
+  const onExport = async () => {
+    if (presets.length === 0) {
+      showStatus({ kind: 'error', message: 'No presets to export yet.' });
+      return;
+    }
+    showStatus({ kind: 'busy', message: 'Preparing file…' });
+    try {
+      await exportToFile();
+      showStatus({ kind: 'ok', message: `Exported ${presets.length} preset${presets.length === 1 ? '' : 's'}.` });
+    } catch (e) {
+      showStatus({ kind: 'error', message: (e as Error).message ?? 'Export failed.' });
+    }
+  };
+
+  const onImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    showStatus({ kind: 'busy', message: 'Reading file…' });
+    try {
+      const r: ImportResult = await importFromFile(file);
+      const parts: string[] = [`${r.presetsAdded} preset${r.presetsAdded === 1 ? '' : 's'}`];
+      if (r.imagesAdded) parts.push(`${r.imagesAdded} image${r.imagesAdded === 1 ? '' : 's'}`);
+      if (r.audioAdded) parts.push(`${r.audioAdded} sound${r.audioAdded === 1 ? '' : 's'}`);
+      showStatus({ kind: 'ok', message: `Imported ${parts.join(', ')}.` });
+    } catch (err) {
+      showStatus({ kind: 'error', message: (err as Error).message ?? 'Import failed.' });
+    }
+  };
 
   return (
     <>
@@ -35,6 +83,7 @@ export default function PresetMenu() {
             label={activeName ?? 'presets'}
             title={activeName ? `Preset: ${activeName}` : 'Presets'}
             active={Boolean(activeName)}
+            iconColor="text-amber-600"
             onClick={open}
           />
         )}
@@ -66,32 +115,34 @@ export default function PresetMenu() {
                       onClick={() =>
                         setMode({ kind: 'rename', id: p.id, current: p.name })
                       }
-                      className="h-7 w-7 rounded hover:bg-slate-100 text-xs"
+                      className="h-7 w-7 rounded hover:bg-slate-100 flex items-center justify-center text-slate-500"
                       title="Rename"
+                      aria-label={`Rename ${p.name}`}
                     >
-                      ✎
+                      <Pencil className="w-3.5 h-3.5" strokeWidth={1.75} />
                     </button>
                     <button
                       onClick={() =>
                         setMode({ kind: 'delete', id: p.id, name: p.name })
                       }
-                      className="h-7 w-7 rounded hover:bg-red-50 text-red-600 text-xs"
+                      className="h-7 w-7 rounded hover:bg-rose-50 flex items-center justify-center text-rose-600"
                       title="Delete"
+                      aria-label={`Delete ${p.name}`}
                     >
-                      🗑
+                      <Trash2 className="w-3.5 h-3.5" strokeWidth={1.75} />
                     </button>
                   </li>
                 ))}
               </ul>
             )}
-            <div className="border-t border-slate-200 mt-1 pt-2 flex flex-col gap-1">
+
+            <div className="border-t border-slate-200 mt-1 pt-2 flex flex-col gap-0.5">
               <button
-                onClick={() => {
-                  setMode({ kind: 'save-as' });
-                }}
-                className="px-2 py-1 rounded hover:bg-slate-100 text-sm text-left"
+                onClick={() => setMode({ kind: 'save-as' })}
+                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-100 text-sm text-left"
               >
-                ➕ Save current as preset…
+                <Plus className="w-4 h-4 text-slate-500" strokeWidth={1.75} />
+                <span>Save current as preset…</span>
               </button>
               <button
                 disabled={!activeId}
@@ -99,11 +150,53 @@ export default function PresetMenu() {
                   updateActivePreset();
                   closePopover();
                 }}
-                className="px-2 py-1 rounded hover:bg-slate-100 text-sm text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-100 text-sm text-left disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                💾 Update active preset
+                <Save className="w-4 h-4 text-slate-500" strokeWidth={1.75} />
+                <span>Update active preset</span>
               </button>
             </div>
+
+            <div className="border-t border-slate-200 mt-1 pt-2 flex flex-col gap-0.5">
+              <button
+                onClick={onExport}
+                disabled={status.kind === 'busy'}
+                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-100 text-sm text-left disabled:opacity-50"
+              >
+                <Download className="w-4 h-4 text-slate-500" strokeWidth={1.75} />
+                <span>Export presets…</span>
+              </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={status.kind === 'busy'}
+                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-100 text-sm text-left disabled:opacity-50"
+              >
+                <Upload className="w-4 h-4 text-slate-500" strokeWidth={1.75} />
+                <span>Import presets…</span>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                onChange={onImport}
+              />
+            </div>
+
+            {status.kind !== 'idle' && (
+              <div
+                className={
+                  'mt-1 text-xs rounded px-2 py-1 ' +
+                  (status.kind === 'busy'
+                    ? 'bg-slate-100 text-slate-700'
+                    : status.kind === 'ok'
+                      ? 'bg-emerald-50 text-emerald-800'
+                      : 'bg-rose-50 text-rose-800')
+                }
+              >
+                {status.message}
+              </div>
+            )}
           </div>
         )}
       </SettingsPopover>

@@ -9,10 +9,16 @@ export type ExitPollConfig = {
   down?: number;
 };
 
-const OPTIONS: Array<{ key: Vote; icon: string; cls: string }> = [
-  { key: 'up',   icon: '👍', cls: 'bg-emerald-500' },
-  { key: 'mid',  icon: '😐', cls: 'bg-amber-500' },
-  { key: 'down', icon: '👎', cls: 'bg-rose-500' },
+const OPTIONS: Array<{
+  key: Vote;
+  icon: string;
+  bg: string;
+  hoverBg: string;
+  bar: string;
+}> = [
+  { key: 'up',   icon: '👍', bg: 'bg-emerald-500', hoverBg: 'hover:bg-emerald-600', bar: 'bg-emerald-500' },
+  { key: 'mid',  icon: '😐', bg: 'bg-amber-500',   hoverBg: 'hover:bg-amber-600',   bar: 'bg-amber-500' },
+  { key: 'down', icon: '👎', bg: 'bg-rose-500',    hoverBg: 'hover:bg-rose-600',    bar: 'bg-rose-500' },
 ];
 
 export default function ExitPoll({ instance }: { instance: WidgetInstance }) {
@@ -25,15 +31,14 @@ export default function ExitPoll({ instance }: { instance: WidgetInstance }) {
   };
   const total = counts.up + counts.mid + counts.down;
 
-  const tally = (v: Vote) => {
+  const tally = (v: Vote) =>
     updateConfig(instance.id, { [v]: counts[v] + 1 });
-  };
   const reset = () => updateConfig(instance.id, { up: 0, mid: 0, down: 0 });
 
   return (
     <div
-      className="h-full w-full flex flex-col p-2 gap-2"
-      style={{ containerType: 'inline-size' as const }}
+      className="h-full w-full flex flex-col p-3 gap-2"
+      style={{ containerType: 'size' as const }}
     >
       <div className="flex-1 grid grid-cols-3 gap-2 min-h-0">
         {OPTIONS.map((o) => {
@@ -44,23 +49,61 @@ export default function ExitPoll({ instance }: { instance: WidgetInstance }) {
               key={o.key}
               onClick={() => tally(o.key)}
               className={
-                'rounded-lg flex flex-col items-center justify-end p-2 text-white text-center hover:brightness-110 transition ' +
-                o.cls
+                'rounded-xl flex flex-col items-center justify-center text-white text-center transition-all active:scale-95 ' +
+                o.bg + ' ' + o.hoverBg
               }
+              aria-label={`Vote ${o.key}`}
             >
-              <div className="text-[clamp(28px,16cqw,72px)] leading-none mb-1">{o.icon}</div>
-              <div className="font-bold tabular-nums text-[clamp(20px,10cqw,42px)] leading-none">{n}</div>
-              <div className="text-xs opacity-90">{pct}%</div>
+              <div
+                className="leading-none mb-2"
+                style={{ fontSize: 'min(34cqi, 30cqb)' }}
+              >
+                {o.icon}
+              </div>
+              <div
+                className="font-bold tabular-nums leading-none"
+                style={{ fontSize: 'min(16cqi, 18cqb)' }}
+              >
+                {n}
+              </div>
+              <div
+                className="opacity-80 tabular-nums mt-1"
+                style={{ fontSize: 'min(5cqi, 6cqb)' }}
+              >
+                {pct}%
+              </div>
             </button>
           );
         })}
       </div>
-      <div className="flex items-center justify-between text-xs text-slate-500">
-        <span>Total votes: {total}</span>
+
+      {total > 0 && (
+        <div
+          className="h-1.5 w-full rounded-full bg-slate-200/60 overflow-hidden flex"
+          aria-hidden
+        >
+          {OPTIONS.map((o) => {
+            const w = total === 0 ? 0 : (counts[o.key] / total) * 100;
+            if (w === 0) return null;
+            return (
+              <div
+                key={o.key}
+                className={'h-full ' + o.bar}
+                style={{ width: `${w}%`, transition: 'width 200ms linear' }}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between text-xs opacity-60">
+        <span>
+          {total === 0 ? 'No votes yet' : `${total} vote${total === 1 ? '' : 's'}`}
+        </span>
         <button
           onClick={reset}
           disabled={total === 0}
-          className="px-2 py-0.5 rounded hover:bg-slate-100 disabled:opacity-40"
+          className="px-2 py-0.5 rounded hover:bg-slate-100/60 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Reset
         </button>
