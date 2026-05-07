@@ -1,3 +1,4 @@
+import { Film } from 'lucide-react';
 import type { WidgetInstance } from '../../store/types';
 import { parseYouTubeId } from './parse';
 
@@ -9,8 +10,24 @@ export default function VideoEmbed({ instance }: { instance: WidgetInstance }) {
 
   if (!id) {
     return (
-      <div className="h-full w-full flex items-center justify-center bg-slate-100 text-slate-400 text-sm p-3 text-center">
-        Paste a YouTube URL in ⚙ settings.
+      <div
+        className="h-full w-full flex flex-col items-center justify-center gap-2 p-3 text-center"
+        style={{ containerType: 'size' as const }}
+      >
+        <Film
+          className="opacity-30"
+          style={{
+            width: 'min(22cqi, 30cqb)',
+            height: 'min(22cqi, 30cqb)',
+          }}
+          strokeWidth={1.25}
+        />
+        <div
+          className="opacity-50"
+          style={{ fontSize: 'min(5cqi, 7cqb)' }}
+        >
+          Paste a YouTube URL in ⚙ settings.
+        </div>
       </div>
     );
   }
