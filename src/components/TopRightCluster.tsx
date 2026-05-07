@@ -41,7 +41,7 @@ export default function TopRightCluster({ onOpenHelp }: Props) {
 
   return (
     <div
-      className="fixed top-3 right-3 z-[300] flex items-center gap-1 rounded-full px-1 py-1 bg-white/40 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-white/60 shadow-[0_10px_30px_-8px_rgba(15,23,42,0.18),0_2px_6px_-2px_rgba(15,23,42,0.10)]"
+      className="fixed top-3 right-3 z-[300] flex items-center gap-1 rounded-full px-1 py-1 bg-white/75 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-white/80 shadow-[0_10px_30px_-8px_rgba(15,23,42,0.22),0_2px_6px_-2px_rgba(15,23,42,0.12)]"
     >
       {buttons.map(({ Icon, title, onClick, active }, i) => (
         <button
