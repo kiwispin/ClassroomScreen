@@ -109,8 +109,8 @@ const options: DiceOption[] = [
     config: { mode: 'coin' },
     preview: (
       <div className="relative h-24 w-28">
-        <CoinFace side="1" className="absolute left-0 top-0 w-20" />
-        <CoinFace side="queen" className="absolute bottom-0 right-0 w-20" />
+        <CoinFace side="tails" className="absolute left-0 top-0 w-20" />
+        <CoinFace side="heads" className="absolute bottom-0 right-0 w-20" />
       </div>
     ),
   },

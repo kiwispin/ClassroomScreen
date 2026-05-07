@@ -83,71 +83,59 @@ export function PolyDie({
   sides: 12 | 20;
   className?: string;
 }) {
-  const facets =
-    sides === 12
-      ? [
-          'M50 8 L72 16 L87 36 L80 64 L56 84 L28 78 L13 57 L17 30 Z',
-          'M50 8 L50 35 L72 16 Z',
-          'M50 35 L87 36 L72 16 Z',
-          'M50 35 L80 64 L87 36 Z',
-          'M50 35 L56 84 L80 64 Z',
-          'M50 35 L28 78 L56 84 Z',
-          'M50 35 L13 57 L28 78 Z',
-          'M50 35 L17 30 L13 57 Z',
-          'M50 35 L50 8 L17 30 Z',
-        ]
-      : [
-          'M50 8 L87 32 L78 76 L50 94 L22 76 L13 32 Z',
-          'M50 8 L50 48 L87 32 Z',
-          'M50 8 L13 32 L50 48 Z',
-          'M13 32 L22 76 L50 48 Z',
-          'M87 32 L50 48 L78 76 Z',
-          'M22 76 L50 94 L50 48 Z',
-          'M78 76 L50 48 L50 94 Z',
-          'M22 76 L78 76 L50 48 Z',
-        ];
-  const palette = ['#d1d5db', '#f8fafc', '#bfc5cb', '#e5e7eb', '#aeb4ba'];
+  if (sides === 20) {
+    return (
+      <svg viewBox="0 0 120 120" className={className} aria-hidden style={{ overflow: 'visible' }}>
+        <polygon points="60,8 110,40 96,88 60,114 24,88 10,40" fill="#f8fafc" stroke="#94a3b8" strokeWidth="0.7" />
+        <polygon points="60,8 60,48 110,40" fill="#b8bdc3" stroke="#94a3b8" strokeWidth="0.7" />
+        <polygon points="60,8 10,40 60,48" fill="#d4d8dd" stroke="#94a3b8" strokeWidth="0.7" />
+        <polygon points="10,40 24,88 60,48" fill="#e5e7eb" stroke="#94a3b8" strokeWidth="0.7" />
+        <polygon points="110,40 60,48 96,88" fill="#c5c9ce" stroke="#94a3b8" strokeWidth="0.7" />
+        <polygon points="24,88 60,114 60,48" fill="#cfd3d8" stroke="#94a3b8" strokeWidth="0.7" />
+        <polygon points="96,88 60,48 60,114" fill="#aeb4bb" stroke="#94a3b8" strokeWidth="0.7" />
+        <polygon points="24,88 96,88 60,48" fill="#f8fafc" stroke="#94a3b8" strokeWidth="0.7" />
+        <text x="60" y="78" textAnchor="middle" dominantBaseline="middle" fill="#0f172a" fontSize="24" fontWeight="800">
+          {value}
+        </text>
+      </svg>
+    );
+  }
 
   return (
-    <svg viewBox="0 0 100 100" className={className} aria-hidden style={{ overflow: 'visible' }}>
-      {facets.map((d, i) => (
-        <path
-          key={i}
-          d={d}
-          fill={palette[i % palette.length]}
-          stroke="#9ca3af"
-          strokeWidth="0.8"
-        />
-      ))}
-      <text
-        x="50"
-        y={sides === 12 ? '57' : '59'}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fill="#0f172a"
-        fontSize="23"
-        fontWeight="800"
-      >
+    <svg viewBox="0 0 120 120" className={className} aria-hidden style={{ overflow: 'visible' }}>
+      <polygon points="60,7 89,18 111,45 111,76 90,104 60,115 30,104 9,76 9,45 31,18" fill="#f8fafc" stroke="#94a3b8" strokeWidth="0.75" />
+      <polygon points="60,7 89,18 111,45 79,39 60,29" fill="#c8ccd1" stroke="#94a3b8" strokeWidth="0.75" />
+      <polygon points="60,7 60,29 41,39 9,45 31,18" fill="#d8dce0" stroke="#94a3b8" strokeWidth="0.75" />
+      <polygon points="9,45 41,39 30,66 9,76" fill="#f1f3f5" stroke="#94a3b8" strokeWidth="0.75" />
+      <polygon points="111,45 111,76 90,66 79,39" fill="#e6e8eb" stroke="#94a3b8" strokeWidth="0.75" />
+      <polygon points="30,66 41,39 60,29 79,39 90,66 75,83 45,83" fill="#fafafa" stroke="#94a3b8" strokeWidth="0.75" />
+      <polygon points="9,76 30,66 45,83 30,104" fill="#e8eaed" stroke="#94a3b8" strokeWidth="0.75" />
+      <polygon points="111,76 90,66 75,83 90,104" fill="#dfe2e5" stroke="#94a3b8" strokeWidth="0.75" />
+      <polygon points="30,104 45,83 75,83 90,104 60,115" fill="#b8bdc3" stroke="#94a3b8" strokeWidth="0.75" />
+      <text x="60" y="63" textAnchor="middle" dominantBaseline="middle" fill="#0f172a" fontSize="31" fontWeight="800">
         {value}
       </text>
     </svg>
   );
 }
 
-export function CoinFace({ side = '1', className = '' }: { side?: string; className?: string }) {
+export function CoinFace({ side = 'heads', className = '' }: { side?: string; className?: string }) {
+  const isHeads = side === 'heads';
+
   return (
-    <svg viewBox="0 0 100 100" className={className} aria-hidden>
-      <circle cx="50" cy="50" r="40" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="6" />
-      <circle cx="50" cy="50" r="34" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="9 5" />
-      {side === 'queen' ? (
+    <svg viewBox="0 0 120 120" className={className} aria-hidden style={{ overflow: 'visible' }}>
+      <circle cx="60" cy="60" r="48" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="7" />
+      <circle cx="60" cy="60" r="41" fill="none" stroke="#cbd5e1" strokeWidth="2.5" strokeDasharray="11 6" />
+      {isHeads ? (
         <>
-          <path d="M32 63 Q50 76 68 63 L64 40 Q55 47 50 32 Q45 47 36 40 Z" fill="white" stroke="#0f172a" strokeWidth="3" strokeLinejoin="round" />
-          <circle cx="38" cy="37" r="3" fill="#0f172a" />
-          <circle cx="50" cy="29" r="3" fill="#0f172a" />
-          <circle cx="62" cy="37" r="3" fill="#0f172a" />
+          <path d="M44 74 C36 61 39 40 55 33 C68 28 79 37 80 50 C81 59 75 65 69 69 L72 84 C61 89 49 85 44 74 Z" fill="white" stroke="#0f172a" strokeWidth="3.3" strokeLinejoin="round" />
+          <path d="M54 37 C54 28 61 25 67 26 C73 27 77 32 78 38" fill="none" stroke="#0f172a" strokeWidth="3.3" strokeLinecap="round" />
+          <path d="M49 57 C55 60 61 58 66 53" fill="none" stroke="#0f172a" strokeWidth="2.7" strokeLinecap="round" />
+          <circle cx="65" cy="45" r="2.3" fill="#0f172a" />
+          <path d="M42 85 L77 85" fill="none" stroke="#0f172a" strokeWidth="3.3" strokeLinecap="round" />
         </>
       ) : (
-        <text x="50" y="57" textAnchor="middle" fill="#0f172a" fontSize="50" fontWeight="500">
+        <text x="60" y="78" textAnchor="middle" fill="#0f172a" fontSize="68" fontWeight="400" fontFamily="Georgia, serif">
           1
         </text>
       )}

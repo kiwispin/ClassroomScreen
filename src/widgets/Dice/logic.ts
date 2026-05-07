@@ -9,7 +9,7 @@ export type DiceMode =
   | 'rps';
 
 export const COLORS = ['#c084fc', '#f87171', '#fbbf24', '#34d399', '#38bdf8', '#818cf8'];
-export const COIN_SIDES = ['1', 'queen'];
+export const COIN_SIDES = ['heads', 'tails'];
 export const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 export const RPS = ['rock', 'paper', 'scissors'] as const;
 
