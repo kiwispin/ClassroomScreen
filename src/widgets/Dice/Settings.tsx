@@ -1,19 +1,20 @@
 import { Check, Dices } from 'lucide-react';
+import type { ReactNode } from 'react';
 import SettingsPopover from '../../components/SettingsPopover';
 import SettingsTriggerButton from '../../components/SettingsTriggerButton';
 import { useAppStore } from '../../store/store';
 import type { WidgetSettingsProps } from '../Demo/meta';
 import type { DiceConfig } from '.';
-import { DieFace } from '.';
+import { CoinFace, ColorFace, DieFace, LetterFace, PolyDie, RpsFace } from '.';
 
 type DiceOption = {
   id: string;
   label: string;
   config: Partial<DiceConfig>;
-  preview: React.ReactNode;
+  preview: ReactNode;
 };
 
-const RangePreview = ({ children }: { children: React.ReactNode }) => (
+const RangePreview = ({ children }: { children: ReactNode }) => (
   <div className="flex h-16 w-16 items-center justify-center rounded-md border-2 border-slate-950 bg-white text-3xl font-bold text-slate-950">
     {children}
   </div>
@@ -85,10 +86,51 @@ const options: DiceOption[] = [
     ),
   },
   {
-    id: 'custom',
-    label: 'Custom',
-    config: { mode: 'range' },
-    preview: <RangePreview>{'A-Z'}</RangePreview>,
+    id: 'color',
+    label: 'Color',
+    config: { mode: 'color' },
+    preview: <ColorFace color="#c084fc" className="w-20 text-slate-950" />,
+  },
+  {
+    id: 'd12',
+    label: 'D12',
+    config: { mode: 'd12' },
+    preview: <PolyDie value={12} sides={12} className="w-24" />,
+  },
+  {
+    id: 'd20',
+    label: 'D20',
+    config: { mode: 'd20' },
+    preview: <PolyDie value={20} sides={20} className="w-24" />,
+  },
+  {
+    id: 'coin',
+    label: 'Coin',
+    config: { mode: 'coin' },
+    preview: (
+      <div className="relative h-24 w-28">
+        <CoinFace side="1" className="absolute left-0 top-0 w-20" />
+        <CoinFace side="queen" className="absolute bottom-0 right-0 w-20" />
+      </div>
+    ),
+  },
+  {
+    id: 'letter',
+    label: 'A-Z',
+    config: { mode: 'letter' },
+    preview: <LetterFace value="A-Z" className="h-20 w-20 text-2xl" />,
+  },
+  {
+    id: 'rps',
+    label: 'Rock paper scissors',
+    config: { mode: 'rps' },
+    preview: (
+      <div className="flex gap-1">
+        <RpsFace value="rock" className="h-10 w-10 text-2xl" />
+        <RpsFace value="paper" className="h-10 w-10 text-2xl" />
+        <RpsFace value="scissors" className="h-10 w-10 text-2xl" />
+      </div>
+    ),
   },
 ];
 
@@ -101,10 +143,10 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
   const max = cfg.max ?? 100;
 
   const isSelected = (option: DiceOption) => {
-    if (option.id === 'custom') return mode === 'range' && ![6, 100].includes(max - min + 1);
     if (option.config.mode !== mode) return false;
     if (option.config.mode === 'dice') return count === option.config.count;
-    return min === option.config.min && max === option.config.max;
+    if (option.config.mode === 'range') return min === option.config.min && max === option.config.max;
+    return true;
   };
 
   return (
@@ -168,7 +210,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                   className="w-20 rounded border border-slate-300 px-2 py-1"
                 />
               </label>
-            ) : (
+            ) : mode === 'range' ? (
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1">
                   <span className="text-sm text-slate-600">Min</span>
@@ -198,6 +240,10 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                     className="rounded border border-slate-300 px-2 py-1"
                   />
                 </label>
+              </div>
+            ) : (
+              <div className="text-sm text-slate-600">
+                Select Dice or Number below to edit custom values.
               </div>
             )}
             <div className="mt-3 flex gap-2">
