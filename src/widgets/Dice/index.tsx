@@ -86,16 +86,19 @@ export function PolyDie({
   if (sides === 20) {
     return (
       <svg viewBox="0 0 120 120" className={className} aria-hidden style={{ overflow: 'visible' }}>
-        <polygon points="60,20 96,53 85,82 60,101 35,82 24,53" fill="#f8fafc" stroke="#94a3b8" strokeWidth="0.8" />
-        <polygon points="60,20 96,53 67,62" fill="#b8bec5" stroke="#94a3b8" strokeWidth="0.8" />
-        <polygon points="60,20 53,62 24,53" fill="#d4d8dd" stroke="#94a3b8" strokeWidth="0.8" />
-        <polygon points="60,20 67,62 53,62" fill="#f9fafb" stroke="#94a3b8" strokeWidth="0.8" />
-        <polygon points="24,53 53,62 43,80 35,82" fill="#e8eaed" stroke="#94a3b8" strokeWidth="0.8" />
-        <polygon points="96,53 85,82 77,80 67,62" fill="#c3c8cf" stroke="#94a3b8" strokeWidth="0.8" />
-        <polygon points="43,80 53,62 67,62 77,80 60,101" fill="#fafafa" stroke="#94a3b8" strokeWidth="0.8" />
-        <polygon points="35,82 43,80 60,101" fill="#c0c5cc" stroke="#94a3b8" strokeWidth="0.8" />
-        <polygon points="85,82 60,101 77,80" fill="#d2d6db" stroke="#94a3b8" strokeWidth="0.8" />
-        <text x="60" y="67" textAnchor="middle" dominantBaseline="middle" fill="#0f172a" fontSize="24" fontWeight="800">
+        <polygon points="60,6 104,31 104,89 60,114 16,89 16,31" fill="#eef1f4" stroke="#94a3b8" strokeWidth="0.9" />
+        <polygon points="60,6 82,31 60,42" fill="#c4c9d0" stroke="#94a3b8" strokeWidth="0.9" />
+        <polygon points="60,6 60,42 38,31" fill="#dbe0e5" stroke="#94a3b8" strokeWidth="0.9" />
+        <polygon points="38,31 60,42 44,56 16,31" fill="#e8ebef" stroke="#94a3b8" strokeWidth="0.9" />
+        <polygon points="82,31 104,31 76,56 60,42" fill="#b8bec6" stroke="#94a3b8" strokeWidth="0.9" />
+        <polygon points="16,31 44,56 32,78 16,89" fill="#f8fafc" stroke="#94a3b8" strokeWidth="0.9" />
+        <polygon points="104,31 104,89 88,78 76,56" fill="#d0d5db" stroke="#94a3b8" strokeWidth="0.9" />
+        <polygon points="44,56 60,42 76,56 70,82 50,82" fill="#fafafa" stroke="#94a3b8" strokeWidth="0.9" />
+        <polygon points="32,78 44,56 50,82 60,114" fill="#c7ccd3" stroke="#94a3b8" strokeWidth="0.9" />
+        <polygon points="88,78 60,114 70,82 76,56" fill="#b7bdc5" stroke="#94a3b8" strokeWidth="0.9" />
+        <polygon points="32,78 60,114 16,89" fill="#d9dde2" stroke="#94a3b8" strokeWidth="0.9" />
+        <polygon points="88,78 104,89 60,114" fill="#e7eaee" stroke="#94a3b8" strokeWidth="0.9" />
+        <text x="60" y="66" textAnchor="middle" dominantBaseline="middle" fill="#0f172a" fontSize="24" fontWeight="800">
           {value}
         </text>
       </svg>
