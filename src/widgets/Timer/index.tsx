@@ -199,9 +199,10 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     if (running) return;
     const digits = parseDigits(fullMs);
     const maxes = [9, 9, 5, 9];
-    const next = digits[idx] + delta;
-    if (next < 0 || next > maxes[idx]) return;
-    digits[idx] = next;
+    const max = maxes[idx];
+    // Wrap around: − from 0 → max, + from max → 0.
+    const raw = digits[idx] + delta;
+    digits[idx] = raw < 0 ? max : raw > max ? 0 : raw;
     const newMs = fromDigits(digits[0], digits[1], digits[2], digits[3]);
     updateConfig(instance.id, {
       fullDurationMs: newMs,
