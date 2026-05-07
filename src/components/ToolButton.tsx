@@ -184,7 +184,7 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
   ref,
 ) {
   const compact = variant === 'popover';
-  const iconSize = compact ? 'h-10 w-10' : 'h-9 w-9';
+  const iconSize = compact ? 'h-9 w-9' : 'h-8 w-8';
   const accent = active ? '#a5b4fc' : accentForColor(iconColor);
 
   return (
@@ -195,8 +195,8 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
       className={
         'shrink-0 flex flex-col items-center justify-center rounded-2xl transition-colors ' +
         (compact
-          ? 'h-[112px] min-w-[94px] px-2 py-3 '
-          : 'h-[96px] min-w-[92px] px-2 py-3 ') +
+          ? 'h-[98px] min-w-[84px] px-2 py-2 '
+          : 'h-[78px] min-w-[82px] px-2 py-2 ') +
         (active
           ? 'bg-indigo-50 text-indigo-600 ring-2 ring-slate-200'
           : 'text-slate-900 hover:bg-slate-50')
@@ -206,12 +206,12 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
         <AccentDetail label={label} color={accent} />
         <Icon
           className={'relative z-10 text-slate-950 ' + iconSize}
-          strokeWidth={2.2}
+          strokeWidth={2.15}
         />
       </span>
       <span
         className={
-          'mt-2 max-w-[88px] truncate text-center text-[14px] font-medium leading-tight ' +
+          'mt-1.5 max-w-[82px] truncate text-center text-[13px] font-medium leading-tight ' +
           (active ? 'text-indigo-600' : 'text-slate-700')
         }
       >
