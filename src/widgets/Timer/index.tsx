@@ -410,7 +410,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     );
   }
 
-  // === WIDE layout (ultra-wide, no ring) ===================================
+  // === WIDE layout (large ring on the left + digits + controls) ============
 
   return (
     <div
@@ -418,6 +418,10 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
       className="relative h-full w-full flex items-center justify-between p-3 gap-3"
       style={{ containerType: 'size' as const }}
     >
+      <div className="aspect-square h-[86%] max-h-full max-w-[32%] flex items-center justify-center shrink-0">
+        <ProgressRing fraction={remainingFraction} />
+      </div>
+
       <div
         className={
           'flex-1 min-w-0 flex items-center justify-center gap-1 overflow-hidden ' +
