@@ -37,9 +37,10 @@ const fromDigits = (
 const W_DIGIT = 'text-[clamp(36px,min(16cqw,52cqh),320px)]';
 const W_PM = 'w-[clamp(14px,min(3cqw,9cqh),32px)] h-[clamp(14px,min(3cqw,9cqh),32px)]';
 const W_BTN = 'w-[clamp(36px,min(11cqw,32cqh),96px)] h-[clamp(36px,min(11cqw,32cqh),96px)]';
-const W_PLAY_ICON = 'w-[clamp(16px,min(5cqw,15cqh),44px)] h-[clamp(16px,min(5cqw,15cqh),44px)]';
+// Icons sit ~32% of button size for a cleaner, less-chunky feel.
+const W_PLAY_ICON = 'w-[clamp(12px,min(3.6cqw,11cqh),34px)] h-[clamp(12px,min(3.6cqw,11cqh),34px)]';
 const W_RESET_BTN = 'w-[clamp(28px,min(8cqw,24cqh),68px)] h-[clamp(28px,min(8cqw,24cqh),68px)]';
-const W_RESET_ICON = 'w-[clamp(12px,min(3cqw,9cqh),26px)] h-[clamp(12px,min(3cqw,9cqh),26px)]';
+const W_RESET_ICON = 'w-[clamp(10px,min(2.5cqw,7cqh),20px)] h-[clamp(10px,min(2.5cqw,7cqh),20px)]';
 
 type DigitColumnProps = {
   value: number;
@@ -73,20 +74,22 @@ const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
 
 // --- TALL-MODE progress ring ------------------------------------------------
 
+// `fraction` here means "how full the ring is" (1 = full at start, 0 = empty
+// when timer hits zero) — matches ClassroomScreen's depleting-arc style.
 const ProgressRing = ({ fraction }: { fraction: number }) => {
-  const r = 46;
+  const r = 45;
   const c = 2 * Math.PI * r;
   const safe = Math.max(0, Math.min(1, fraction));
   return (
     <svg viewBox="0 0 100 100" className="w-full h-full" aria-hidden>
-      <circle cx="50" cy="50" r={r} fill="none" stroke="rgb(226 232 240)" strokeWidth="4" />
+      <circle cx="50" cy="50" r={r} fill="none" stroke="rgb(241 245 249)" strokeWidth="6" />
       <circle
         cx="50"
         cy="50"
         r={r}
         fill="none"
         stroke="rgb(99 102 241)"
-        strokeWidth="4"
+        strokeWidth="6"
         strokeDasharray={c}
         strokeDashoffset={c * (1 - safe)}
         strokeLinecap="round"
@@ -180,7 +183,11 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
   const displayMs = running ? remaining : durationMs;
   const [mTens, mOnes, sTens, sOnes] = parseDigits(displayMs);
 
-  const fraction = fullMs > 0 ? Math.max(0, Math.min(1, (fullMs - remaining) / fullMs)) : 0;
+  // Two views of progress:
+  //   `elapsedFraction` (0 → 1) drives the wide-mode bottom bar that FILLS as time passes.
+  //   `remainingFraction` (1 → 0) drives the ring that DEPLETES as time passes.
+  const elapsedFraction = fullMs > 0 ? Math.max(0, Math.min(1, (fullMs - remaining) / fullMs)) : 0;
+  const remainingFraction = fullMs > 0 ? Math.max(0, Math.min(1, remaining / fullMs)) : 1;
 
   const adjustDigit = (idx: 0 | 1 | 2 | 3, delta: 1 | -1) => {
     if (running) return;
@@ -251,12 +258,13 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     const tallPm = 'w-[clamp(16px,4cqmin,40px)] h-[clamp(16px,4cqmin,40px)]';
     const tallPrimaryBtn =
       'w-[clamp(36px,11cqmin,80px)] h-[clamp(36px,11cqmin,80px)]';
+    // Icon ~32% of the button (was ~45%) — closer to ClassroomScreen's proportions.
     const tallPrimaryIcon =
-      'w-[clamp(16px,5cqmin,36px)] h-[clamp(16px,5cqmin,36px)]';
+      'w-[clamp(12px,3.6cqmin,28px)] h-[clamp(12px,3.6cqmin,28px)]';
     const tallResetBtn =
       'w-[clamp(28px,8cqmin,60px)] h-[clamp(28px,8cqmin,60px)]';
     const tallResetIcon =
-      'w-[clamp(12px,3.5cqmin,24px)] h-[clamp(12px,3.5cqmin,24px)]';
+      'w-[clamp(10px,2.5cqmin,18px)] h-[clamp(10px,2.5cqmin,18px)]';
 
     return (
       <div
@@ -267,7 +275,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         {/* Big progress ring centered (80% of the smaller dimension) */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div style={{ width: '80cqmin', height: '80cqmin' }}>
-            <ProgressRing fraction={fraction} />
+            <ProgressRing fraction={remainingFraction} />
           </div>
         </div>
 
@@ -306,7 +314,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           <button
             onClick={start}
             disabled={fullMs === 0}
-            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center shadow-sm transition-colors ${tallPrimaryBtn}`}
+            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${tallPrimaryBtn}`}
             aria-label="Start"
             title="Start"
           >
@@ -315,7 +323,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         ) : (
           <button
             onClick={pause}
-            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center shadow-sm transition-colors ${tallPrimaryBtn}`}
+            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-colors ${tallPrimaryBtn}`}
             aria-label="Pause"
             title="Pause"
           >
@@ -346,7 +354,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         style={{ containerType: 'size' as const }}
       >
         <div className="aspect-square h-full max-h-full max-w-[35%] flex items-center justify-center shrink-0">
-          <ProgressRing fraction={fraction} />
+          <ProgressRing fraction={remainingFraction} />
         </div>
 
         <div
@@ -367,7 +375,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
             <button
               onClick={start}
               disabled={fullMs === 0}
-              className={`rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center shadow-sm transition-colors ${W_BTN}`}
+              className={`rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${W_BTN}`}
               aria-label="Start"
               title="Start"
             >
@@ -376,7 +384,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           ) : (
             <button
               onClick={pause}
-              className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center shadow-sm transition-colors ${W_BTN}`}
+              className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-colors ${W_BTN}`}
               aria-label="Pause"
               title="Pause"
             >
@@ -422,7 +430,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           <button
             onClick={start}
             disabled={fullMs === 0}
-            className={`rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center shadow-sm transition-colors ${W_BTN}`}
+            className={`rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${W_BTN}`}
             aria-label="Start"
             title="Start"
           >
@@ -431,7 +439,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         ) : (
           <button
             onClick={pause}
-            className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center shadow-sm transition-colors ${W_BTN}`}
+            className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-colors ${W_BTN}`}
             aria-label="Pause"
             title="Pause"
           >
@@ -456,7 +464,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         <div
           className="h-full bg-indigo-500"
           style={{
-            width: `${Math.round(fraction * 100)}%`,
+            width: `${Math.round(elapsedFraction * 100)}%`,
             transition: 'width 200ms linear',
           }}
         />
