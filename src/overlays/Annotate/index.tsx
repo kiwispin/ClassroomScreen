@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppStore } from '../../store/store';
-import AnnotateToolBar from './ToolBar';
 
 type Tool = 'pen' | 'eraser';
 type Point = { x: number; y: number };
@@ -33,6 +32,12 @@ const drawStroke = (ctx: CanvasRenderingContext2D, s: Stroke) => {
 export default function AnnotateOverlay() {
   const open = useAppStore((s) => s.annotateOpen);
   const close = useAppStore((s) => s.toggleAnnotate);
+  const tool = useAppStore((s) => s.annotateTool);
+  const color = useAppStore((s) => s.annotateColor);
+  const width = useAppStore((s) => s.annotateWidth);
+  const undoRequest = useAppStore((s) => s.annotateUndoRequest);
+  const clearRequest = useAppStore((s) => s.annotateClearRequest);
+  const setCanUndo = useAppStore((s) => s.setAnnotateCanUndo);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
 
@@ -40,10 +45,6 @@ export default function AnnotateOverlay() {
   const currentStrokeRef = useRef<Stroke | null>(null);
   const drawingRef = useRef(false);
   const [strokeCount, setStrokeCount] = useState(0); // forces re-render so the Undo button enables/disables
-
-  const [tool, setTool] = useState<Tool>('pen');
-  const [color, setColor] = useState('#ef4444');
-  const [width, setWidth] = useState(4);
 
   const redrawAll = () => {
     const ctx = ctxRef.current;
@@ -53,6 +54,31 @@ export default function AnnotateOverlay() {
     for (const s of strokesRef.current) drawStroke(ctx, s);
     if (currentStrokeRef.current) drawStroke(ctx, currentStrokeRef.current);
   };
+
+  const undo = useCallback(() => {
+    if (strokesRef.current.length === 0 && !currentStrokeRef.current) return;
+    if (drawingRef.current && currentStrokeRef.current) {
+      // Cancel an in-progress stroke
+      currentStrokeRef.current = null;
+      drawingRef.current = false;
+    } else {
+      strokesRef.current.pop();
+    }
+    setStrokeCount(strokesRef.current.length);
+    setCanUndo(strokesRef.current.length > 0);
+    redrawAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setCanUndo]);
+
+  const clear = useCallback(() => {
+    strokesRef.current = [];
+    currentStrokeRef.current = null;
+    drawingRef.current = false;
+    setStrokeCount(0);
+    setCanUndo(false);
+    redrawAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setCanUndo]);
 
   // Mount canvas, fit to viewport, redraw on resize
   useEffect(() => {
@@ -72,6 +98,10 @@ export default function AnnotateOverlay() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  useEffect(() => {
+    if (open) setCanUndo(strokesRef.current.length > 0);
+  }, [open, setCanUndo]);
+
   // Escape closes the overlay
   useEffect(() => {
     if (!open) return;
@@ -87,7 +117,15 @@ export default function AnnotateOverlay() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  if (!open) return null;
+  useEffect(() => {
+    if (!open || undoRequest === 0) return;
+    undo();
+  }, [open, undoRequest, undo]);
+
+  useEffect(() => {
+    if (!open || clearRequest === 0) return;
+    clear();
+  }, [open, clearRequest, clear]);
 
   const startDraw = (e: React.PointerEvent<HTMLCanvasElement>) => {
     drawingRef.current = true;
@@ -116,6 +154,7 @@ export default function AnnotateOverlay() {
       strokesRef.current.push(currentStrokeRef.current);
       currentStrokeRef.current = null;
       setStrokeCount(strokesRef.current.length);
+      setCanUndo(true);
     }
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
@@ -124,49 +163,17 @@ export default function AnnotateOverlay() {
     }
   };
 
-  const undo = () => {
-    if (strokesRef.current.length === 0 && !currentStrokeRef.current) return;
-    if (drawingRef.current && currentStrokeRef.current) {
-      // Cancel an in-progress stroke
-      currentStrokeRef.current = null;
-      drawingRef.current = false;
-    } else {
-      strokesRef.current.pop();
-    }
-    setStrokeCount(strokesRef.current.length);
-    redrawAll();
-  };
-
-  const clear = () => {
-    strokesRef.current = [];
-    currentStrokeRef.current = null;
-    drawingRef.current = false;
-    setStrokeCount(0);
-    redrawAll();
-  };
+  if (!open) return null;
 
   return (
-    <>
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 cursor-crosshair touch-none z-[100]"
-        onPointerDown={startDraw}
-        onPointerMove={moveDraw}
-        onPointerUp={endDraw}
-        onPointerCancel={endDraw}
-      />
-      <AnnotateToolBar
-        tool={tool}
-        setTool={setTool}
-        color={color}
-        setColor={setColor}
-        width={width}
-        setWidth={setWidth}
-        canUndo={strokeCount > 0}
-        onUndo={undo}
-        onClear={clear}
-        onClose={close}
-      />
-    </>
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 cursor-crosshair touch-none z-[100]"
+      onPointerDown={startDraw}
+      onPointerMove={moveDraw}
+      onPointerUp={endDraw}
+      onPointerCancel={endDraw}
+      aria-label={`Annotation canvas with ${strokeCount} strokes`}
+    />
   );
 }

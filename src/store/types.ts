@@ -58,6 +58,12 @@ export type AppState = {
   presets: Preset[];
   activePresetId: string | null;
   annotateOpen: boolean;
+  annotateTool: 'pen' | 'eraser';
+  annotateColor: string;
+  annotateWidth: number;
+  annotateCanUndo: boolean;
+  annotateUndoRequest: number;
+  annotateClearRequest: number;
   toolbarPinned: boolean;
   schedule: ScheduleRule[];
   scheduleEnabled: boolean;

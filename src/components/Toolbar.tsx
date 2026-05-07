@@ -3,6 +3,7 @@ import { LayoutGrid, MousePointer2, Pencil } from 'lucide-react';
 import { allWidgets } from '../widgets/registry';
 import { useAppStore } from '../store/store';
 import BackgroundPicker from '../overlays/Background/Picker';
+import AnnotateToolBar from '../overlays/Annotate/ToolBar';
 import PresetMenu from './PresetMenu';
 import ToolButton from './ToolButton';
 import SettingsPopover from './SettingsPopover';
@@ -93,54 +94,60 @@ export default function Toolbar() {
             </span>
           </button>
         </div>
-        <BackgroundPicker />
-        {primary.map((w) => (
-          <ToolButton
-            key={w.type}
-            Icon={w.Icon}
-            label={w.label.toLowerCase()}
-            title={`Add ${w.label}`}
-            iconColor={w.iconColor}
-            onClick={() => addWidget(w.type)}
-          />
-        ))}
-        {secondary.length > 0 && (
-          <SettingsPopover
-            title="Edit widget bar"
-            arrow
-            panelClassName="overflow-visible p-0"
-            trigger={(open, popoverOpen) => (
+        {annotateOpen ? (
+          <AnnotateToolBar />
+        ) : (
+          <>
+            <BackgroundPicker />
+            {primary.map((w) => (
               <ToolButton
-                Icon={LayoutGrid}
-                label="more"
-                title={`More widgets (${secondary.length})`}
-                active={popoverOpen}
-                onClick={open}
+                key={w.type}
+                Icon={w.Icon}
+                label={w.label.toLowerCase()}
+                title={`Add ${w.label}`}
+                iconColor={w.iconColor}
+                onClick={() => addWidget(w.type)}
               />
-            )}
-          >
-            {(close) => (
-              <div className="grid w-[min(30rem,calc(100vw-32px))] grid-cols-3 gap-x-3 gap-y-1 px-5 py-5 sm:grid-cols-4">
-                {secondary.map((w) => (
+            ))}
+            {secondary.length > 0 && (
+              <SettingsPopover
+                title="Edit widget bar"
+                arrow
+                panelClassName="overflow-visible p-0"
+                trigger={(open, popoverOpen) => (
                   <ToolButton
-                    key={w.type}
-                    Icon={w.Icon}
-                    label={w.label.toLowerCase()}
-                    title={`Add ${w.label}`}
-                    iconColor={w.iconColor}
-                    variant="popover"
-                    onClick={() => {
-                      addWidget(w.type);
-                      close();
-                    }}
+                    Icon={LayoutGrid}
+                    label="more"
+                    title={`More widgets (${secondary.length})`}
+                    active={popoverOpen}
+                    onClick={open}
                   />
-                ))}
-              </div>
+                )}
+              >
+                {(close) => (
+                  <div className="grid w-[min(30rem,calc(100vw-32px))] grid-cols-3 gap-x-3 gap-y-1 px-5 py-5 sm:grid-cols-4">
+                    {secondary.map((w) => (
+                      <ToolButton
+                        key={w.type}
+                        Icon={w.Icon}
+                        label={w.label.toLowerCase()}
+                        title={`Add ${w.label}`}
+                        iconColor={w.iconColor}
+                        variant="popover"
+                        onClick={() => {
+                          addWidget(w.type);
+                          close();
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </SettingsPopover>
             )}
-          </SettingsPopover>
+            <div className="mx-1 h-12 w-px shrink-0 bg-slate-200/90" />
+            <PresetMenu />
+          </>
         )}
-        <div className="mx-1 h-12 w-px shrink-0 bg-slate-200/90" />
-        <PresetMenu />
       </div>
     </div>
   );

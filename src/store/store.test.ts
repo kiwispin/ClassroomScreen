@@ -9,6 +9,12 @@ const reset = () =>
     presets: [],
     activePresetId: null,
     annotateOpen: false,
+    annotateTool: 'pen',
+    annotateColor: '#111827',
+    annotateWidth: 5,
+    annotateCanUndo: false,
+    annotateUndoRequest: 0,
+    annotateClearRequest: 0,
     toolbarPinned: false,
   });
 
@@ -97,6 +103,23 @@ describe('app store', () => {
     expect(useAppStore.getState().annotateOpen).toBe(true);
     useAppStore.getState().toggleAnnotate();
     expect(useAppStore.getState().annotateOpen).toBe(false);
+  });
+
+  it('updates annotation controls', () => {
+    useAppStore.getState().setAnnotateTool('eraser');
+    useAppStore.getState().setAnnotateWidth(12);
+    useAppStore.getState().setAnnotateColor('#ef4444');
+    useAppStore.getState().setAnnotateCanUndo(true);
+    useAppStore.getState().requestAnnotateUndo();
+    useAppStore.getState().requestAnnotateClear();
+
+    const s = useAppStore.getState();
+    expect(s.annotateTool).toBe('pen');
+    expect(s.annotateColor).toBe('#ef4444');
+    expect(s.annotateWidth).toBe(12);
+    expect(s.annotateCanUndo).toBe(true);
+    expect(s.annotateUndoRequest).toBe(1);
+    expect(s.annotateClearRequest).toBe(1);
   });
 
   it('savePresetAs creates a new preset from current state', () => {

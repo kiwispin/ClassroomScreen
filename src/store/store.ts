@@ -27,6 +27,12 @@ type Actions = {
   updateWidgetConfig: (id: string, patch: Record<string, unknown>) => void;
   setBackground: (bg: import('./types').Background) => void;
   toggleAnnotate: () => void;
+  setAnnotateTool: (tool: 'pen' | 'eraser') => void;
+  setAnnotateColor: (color: string) => void;
+  setAnnotateWidth: (width: number) => void;
+  setAnnotateCanUndo: (canUndo: boolean) => void;
+  requestAnnotateUndo: () => void;
+  requestAnnotateClear: () => void;
   toggleToolbarPinned: () => void;
   savePresetAs: (name: string) => void;
   switchToPreset: (id: string) => void;
@@ -47,6 +53,12 @@ const initialState: AppState = {
   presets: [],
   activePresetId: null,
   annotateOpen: false,
+  annotateTool: 'pen',
+  annotateColor: '#111827',
+  annotateWidth: 5,
+  annotateCanUndo: false,
+  annotateUndoRequest: 0,
+  annotateClearRequest: 0,
   toolbarPinned: false,
   schedule: [],
   scheduleEnabled: false,
@@ -135,6 +147,20 @@ export const useAppStore = create<AppState & Actions>()(
         })),
 
       toggleAnnotate: () => set((s) => ({ annotateOpen: !s.annotateOpen })),
+
+      setAnnotateTool: (tool) => set({ annotateTool: tool }),
+
+      setAnnotateColor: (color) => set({ annotateColor: color, annotateTool: 'pen' }),
+
+      setAnnotateWidth: (width) => set({ annotateWidth: width }),
+
+      setAnnotateCanUndo: (canUndo) => set({ annotateCanUndo: canUndo }),
+
+      requestAnnotateUndo: () =>
+        set((s) => ({ annotateUndoRequest: s.annotateUndoRequest + 1 })),
+
+      requestAnnotateClear: () =>
+        set((s) => ({ annotateClearRequest: s.annotateClearRequest + 1 })),
 
       toggleToolbarPinned: () => set((s) => ({ toolbarPinned: !s.toolbarPinned })),
 

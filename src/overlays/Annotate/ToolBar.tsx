@@ -1,101 +1,153 @@
-import { Pencil, Eraser, Undo2, Trash2, Check } from 'lucide-react';
+import { Check, Eraser, Pencil, Trash2, Undo2 } from 'lucide-react';
+import { useAppStore } from '../../store/store';
 
-const COLORS = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#111827'];
+const COLORS = [
+  '#111827',
+  '#ef4444',
+  '#f97316',
+  '#facc15',
+  '#22c55e',
+  '#ffffff',
+  '#2563eb',
+  '#38bdf8',
+  '#9333ea',
+  '#ec4899',
+];
 
-type Props = {
-  tool: 'pen' | 'eraser';
-  setTool: (t: 'pen' | 'eraser') => void;
-  color: string;
-  setColor: (c: string) => void;
-  width: number;
-  setWidth: (w: number) => void;
-  canUndo: boolean;
-  onUndo: () => void;
-  onClear: () => void;
-  onClose: () => void;
-};
+const SIZES = [3, 8, 16];
 
-export default function AnnotateToolBar(p: Props) {
+const Divider = () => <div className="mx-1.5 h-12 w-px shrink-0 bg-slate-200/90" />;
+
+export default function AnnotateToolBar() {
+  const tool = useAppStore((s) => s.annotateTool);
+  const color = useAppStore((s) => s.annotateColor);
+  const width = useAppStore((s) => s.annotateWidth);
+  const canUndo = useAppStore((s) => s.annotateCanUndo);
+  const setTool = useAppStore((s) => s.setAnnotateTool);
+  const setColor = useAppStore((s) => s.setAnnotateColor);
+  const setWidth = useAppStore((s) => s.setAnnotateWidth);
+  const undo = useAppStore((s) => s.requestAnnotateUndo);
+  const clear = useAppStore((s) => s.requestAnnotateClear);
+  const done = useAppStore((s) => s.toggleAnnotate);
+
   return (
-    <div className="fixed left-1/2 -translate-x-1/2 bottom-24 z-[210] bg-white/95 backdrop-blur rounded-full shadow-md border border-slate-200/80 px-3 py-2 flex items-center gap-2">
+    <div className="flex min-w-0 items-center gap-1.5">
       <button
-        onClick={() => p.setTool('pen')}
+        type="button"
+        onClick={() => setTool('pen')}
         className={
-          'h-9 w-9 rounded-full flex items-center justify-center transition-colors ' +
-          (p.tool === 'pen'
-            ? 'bg-indigo-50 text-indigo-700'
+          'flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl transition-colors ' +
+          (tool === 'pen'
+            ? 'bg-slate-200/70 text-indigo-600'
             : 'text-slate-700 hover:bg-slate-100')
         }
         title="Pen"
         aria-label="Pen"
       >
-        <Pencil className="w-4 h-4" strokeWidth={1.75} />
+        <Pencil className="h-8 w-8" strokeWidth={2.2} />
       </button>
+
       <button
-        onClick={() => p.setTool('eraser')}
+        type="button"
+        onClick={() => setTool('eraser')}
         className={
-          'h-9 w-9 rounded-full flex items-center justify-center transition-colors ' +
-          (p.tool === 'eraser'
-            ? 'bg-indigo-50 text-indigo-700'
+          'flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl transition-colors ' +
+          (tool === 'eraser'
+            ? 'bg-slate-200/70 text-slate-950'
             : 'text-slate-700 hover:bg-slate-100')
         }
         title="Eraser"
         aria-label="Eraser"
       >
-        <Eraser className="w-4 h-4" strokeWidth={1.75} />
+        <Eraser className="h-8 w-8" strokeWidth={2.2} />
       </button>
-      <div className="w-px h-6 bg-slate-200 mx-0.5" />
-      {COLORS.map((c) => (
-        <button
-          key={c}
-          onClick={() => {
-            p.setColor(c);
-            p.setTool('pen');
-          }}
-          className={
-            'h-7 w-7 rounded-full border-2 transition-all ' +
-            (p.color === c && p.tool === 'pen'
-              ? 'border-slate-700 scale-110'
-              : 'border-transparent')
-          }
-          style={{ backgroundColor: c }}
-          aria-label={`Color ${c}`}
+
+      <Divider />
+
+      <div className="grid shrink-0 grid-cols-5 gap-x-2.5 gap-y-2 px-1">
+        {COLORS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => setColor(c)}
+            className={
+              'h-7 w-7 rounded-full border transition-all ' +
+              (color === c && tool === 'pen'
+                ? 'scale-110 border-pink-500 ring-4 ring-pink-200'
+                : c === '#ffffff'
+                  ? 'border-slate-300'
+                  : 'border-transparent')
+            }
+            style={{ backgroundColor: c }}
+            aria-label={`Color ${c}`}
+            title={`Color ${c}`}
+          />
+        ))}
+      </div>
+
+      <Divider />
+
+      <div className="flex shrink-0 items-center gap-2">
+        {SIZES.map((size) => (
+          <button
+            key={size}
+            type="button"
+            onClick={() => setWidth(size)}
+            className={
+              'flex h-9 w-9 items-center justify-center rounded-xl transition-colors ' +
+              (width === size ? 'bg-slate-200/80' : 'hover:bg-slate-100')
+            }
+            aria-label={`Stroke width ${size}`}
+            title={`Stroke width ${size}`}
+          >
+            <span
+              className="rounded-full bg-slate-900"
+              style={{ width: size, height: size }}
+              aria-hidden
+            />
+          </button>
+        ))}
+        <input
+          type="range"
+          min={2}
+          max={24}
+          value={width}
+          onChange={(e) => setWidth(Number(e.target.value))}
+          className="hidden w-20 accent-indigo-500 lg:block"
+          title="Stroke width"
+          aria-label="Stroke width"
         />
-      ))}
-      <div className="w-px h-6 bg-slate-200 mx-0.5" />
-      <input
-        type="range"
-        min={2}
-        max={20}
-        value={p.width}
-        onChange={(e) => p.setWidth(Number(e.target.value))}
-        className="w-20"
-        title="Stroke width"
-      />
-      <div className="w-px h-6 bg-slate-200 mx-0.5" />
+      </div>
+
+      <Divider />
+
       <button
-        onClick={p.onUndo}
-        disabled={!p.canUndo}
-        className="h-9 px-3 rounded-full hover:bg-slate-100 text-sm flex items-center gap-1.5 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-        title="Undo (⌘Z / Ctrl-Z)"
+        type="button"
+        onClick={undo}
+        disabled={!canUndo}
+        className="flex h-10 items-center gap-2 rounded-xl px-2.5 text-base font-medium text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent"
+        title="Undo"
       >
-        <Undo2 className="w-4 h-4" strokeWidth={1.75} />
-        <span>Undo</span>
+        <Undo2 className="h-5 w-5" strokeWidth={2.1} />
+        <span className="hidden xl:inline">Undo</span>
       </button>
       <button
-        onClick={p.onClear}
-        disabled={!p.canUndo}
-        className="h-9 px-3 rounded-full hover:bg-slate-100 text-sm flex items-center gap-1.5 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+        type="button"
+        onClick={clear}
+        disabled={!canUndo}
+        className="flex h-10 items-center gap-2 rounded-xl px-2.5 text-base font-medium text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent"
+        title="Clear"
       >
-        <Trash2 className="w-4 h-4" strokeWidth={1.75} />
-        <span>Clear</span>
+        <Trash2 className="h-5 w-5" strokeWidth={2.1} />
+        <span className="hidden xl:inline">Clear</span>
       </button>
       <button
-        onClick={p.onClose}
-        className="h-9 px-3 rounded-full bg-slate-700 text-white text-sm hover:bg-slate-800 flex items-center gap-1.5"
-        title="Done (Esc)"
+        type="button"
+        onClick={done}
+        className="ml-1 flex h-11 shrink-0 items-center gap-2 rounded-full bg-slate-700 px-4 text-base font-semibold text-white transition-colors hover:bg-slate-800"
+        title="Done"
       >
-        <Check className="w-4 h-4" strokeWidth={2} />
+        <Check className="h-5 w-5" strokeWidth={2.4} />
         <span>Done</span>
       </button>
     </div>
