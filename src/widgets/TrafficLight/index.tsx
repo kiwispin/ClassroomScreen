@@ -23,11 +23,13 @@ export default function TrafficLight({ instance }: { instance: WidgetInstance })
 
   return (
     <div
-      className="h-full w-full flex items-center justify-center bg-slate-900 p-3"
+      className="h-full w-full flex items-center justify-center p-3"
       style={{ containerType: 'size' as const }}
     >
+      {/* Dark "pole" stays dark regardless of theme so the lights always pop;
+          the theme's tile bg shows around it. */}
       <div
-        className="flex flex-col items-center justify-center rounded-2xl ring-1 ring-white/10"
+        className="flex flex-col items-center justify-center rounded-2xl bg-slate-900 ring-1 ring-white/10"
         style={{
           padding: 'min(4cqi,4cqb)',
           gap: 'min(3cqi,3cqb)',
