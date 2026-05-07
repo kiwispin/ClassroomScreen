@@ -23,7 +23,7 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
       onClick={onClick}
       title={title ?? label}
       className={
-        'shrink-0 flex flex-col items-center justify-center px-2 py-1.5 rounded-xl min-w-[64px] transition-colors ' +
+        'shrink-0 flex flex-col items-center justify-center px-2.5 py-2 rounded-xl min-w-[76px] transition-colors ' +
         (active
           ? 'bg-indigo-50/80 text-indigo-700'
           : 'text-slate-700 hover:bg-white/40')
@@ -31,7 +31,7 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
     >
       <Icon
         className={
-          'w-6 h-6 transition-[filter] ' +
+          'w-7 h-7 transition-[filter] ' +
           (active ? 'text-indigo-600' : iconColor ?? 'text-slate-700')
         }
         strokeWidth={1.75}
@@ -44,7 +44,7 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
       />
       <span
         className={
-          'text-[10px] mt-0.5 max-w-[68px] truncate font-medium ' +
+          'text-[11px] mt-1 max-w-[80px] truncate font-medium ' +
           (active ? 'text-indigo-700' : 'text-slate-600')
         }
       >

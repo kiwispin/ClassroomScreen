@@ -53,7 +53,7 @@ export default function Toolbar() {
       }
     >
       <div
-        className="pointer-events-auto rounded-2xl px-2 py-1.5 flex items-center gap-0.5 max-w-[calc(100vw-24px)] overflow-x-auto bg-white/75 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-white/80 shadow-[0_10px_40px_-8px_rgba(15,23,42,0.22),0_2px_6px_-2px_rgba(15,23,42,0.14)]"
+        className="pointer-events-auto rounded-2xl px-3 py-2 flex items-center gap-0.5 max-w-[calc(100vw-24px)] overflow-x-auto bg-white/75 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-white/80 shadow-[0_10px_40px_-8px_rgba(15,23,42,0.22),0_2px_6px_-2px_rgba(15,23,42,0.14)]"
       >
         <ToolButton
           Icon={Pencil}
@@ -62,7 +62,7 @@ export default function Toolbar() {
           active={annotateOpen}
           onClick={toggleAnnotate}
         />
-        <div className="shrink-0 w-px h-8 bg-slate-200/80 mx-1" />
+        <div className="shrink-0 w-px h-10 bg-slate-200/80 mx-1" />
         {primary.map((w) => (
           <ToolButton
             key={w.type}
@@ -103,7 +103,7 @@ export default function Toolbar() {
             )}
           </SettingsPopover>
         )}
-        <div className="shrink-0 w-px h-8 bg-slate-200/80 mx-1" />
+        <div className="shrink-0 w-px h-10 bg-slate-200/80 mx-1" />
         <PresetMenu />
         <BackgroundPicker />
       </div>
