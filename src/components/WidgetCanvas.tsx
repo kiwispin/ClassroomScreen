@@ -33,7 +33,14 @@ const ENABLE_CORNERS_ONLY = {
   topLeft: true, topRight: true, bottomLeft: true, bottomRight: true,
 };
 
-export default function WidgetCanvas() {
+const ENABLE_NONE = {
+  top: false, right: false, bottom: false, left: false,
+  topLeft: false, topRight: false, bottomLeft: false, bottomRight: false,
+};
+
+type Props = { focusMode?: boolean };
+
+export default function WidgetCanvas({ focusMode = false }: Props) {
   const widgets = useAppStore((s) => s.current.widgets);
   const updatePos = useAppStore((s) => s.updateWidgetPosition);
   const updateSize = useAppStore((s) => s.updateWidgetSize);
@@ -44,7 +51,9 @@ export default function WidgetCanvas() {
       {widgets.map((w) => (
         <Rnd
           key={w.id}
-          className="group"
+          // Drop the `group` class in focus mode so chrome / handles / hover
+          // ring don't react to mouseover.
+          className={focusMode ? '' : 'group'}
           position={{ x: w.position.x, y: w.position.y }}
           size={{ width: w.size.width, height: w.size.height }}
           bounds="parent"
@@ -52,7 +61,8 @@ export default function WidgetCanvas() {
           minHeight={80}
           cancel="input,textarea,select,button,a,canvas"
           style={{ zIndex: w.zIndex }}
-          enableResizing={ENABLE_CORNERS_ONLY}
+          disableDragging={focusMode}
+          enableResizing={focusMode ? ENABLE_NONE : ENABLE_CORNERS_ONLY}
           resizeHandleStyles={HANDLE_STYLES}
           resizeHandleClasses={HANDLE_CLASSES}
           onDragStart={() => focusWidget(w.id)}
@@ -62,7 +72,7 @@ export default function WidgetCanvas() {
             updatePos(w.id, pos.x, pos.y);
           }}
         >
-          <WidgetChrome instance={w} />
+          {!focusMode && <WidgetChrome instance={w} />}
           <WidgetTile instance={w} />
         </Rnd>
       ))}

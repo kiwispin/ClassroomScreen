@@ -5,8 +5,9 @@ type Row = { keys: string[]; description: string };
 const ROWS: Row[] = [
   { keys: ['A'], description: 'Toggle Annotate' },
   { keys: ['F'], description: 'Toggle fullscreen' },
+  { keys: ['Z'], description: 'Toggle focus mode (hide all chrome)' },
   { keys: ['?'], description: 'Show this help' },
-  { keys: ['Esc'], description: 'Close annotate / dialog / help' },
+  { keys: ['Esc'], description: 'Close help / focus / annotate / dialog' },
   { keys: ['⌘/Ctrl', 'Z'], description: 'Undo last annotate stroke (in annotate mode)' },
 ];
 
