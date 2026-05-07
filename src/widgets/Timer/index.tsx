@@ -36,11 +36,12 @@ const fromDigits = (
 
 const W_DIGIT = 'text-[clamp(36px,min(16cqw,52cqh),320px)]';
 const W_PM = 'w-[clamp(14px,min(3cqw,9cqh),32px)] h-[clamp(14px,min(3cqw,9cqh),32px)]';
+// Play/Pause and Reset share the same outer diameter — only the inner icon
+// is slightly smaller on Reset so the square doesn't visually outweigh the play triangle.
 const W_BTN = 'w-[clamp(36px,min(11cqw,32cqh),96px)] h-[clamp(36px,min(11cqw,32cqh),96px)]';
-// Icons sit ~32% of button size for a cleaner, less-chunky feel.
 const W_PLAY_ICON = 'w-[clamp(12px,min(3.6cqw,11cqh),34px)] h-[clamp(12px,min(3.6cqw,11cqh),34px)]';
-const W_RESET_BTN = 'w-[clamp(28px,min(8cqw,24cqh),68px)] h-[clamp(28px,min(8cqw,24cqh),68px)]';
-const W_RESET_ICON = 'w-[clamp(10px,min(2.5cqw,7cqh),20px)] h-[clamp(10px,min(2.5cqw,7cqh),20px)]';
+const W_RESET_BTN = W_BTN;
+const W_RESET_ICON = 'w-[clamp(11px,min(2.9cqw,8.5cqh),26px)] h-[clamp(11px,min(2.9cqw,8.5cqh),26px)]';
 
 type DigitColumnProps = {
   value: number;
@@ -261,15 +262,14 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     // Sizes are based on cqmin so they scale with the smaller dimension.
     const tallDigit = 'text-[clamp(28px,16cqmin,200px)]';
     const tallPm = 'w-[clamp(16px,4cqmin,40px)] h-[clamp(16px,4cqmin,40px)]';
+    // Play and Reset share diameter; Reset icon ~80% of Play icon size.
     const tallPrimaryBtn =
       'w-[clamp(36px,11cqmin,80px)] h-[clamp(36px,11cqmin,80px)]';
-    // Icon ~32% of the button (was ~45%) — closer to ClassroomScreen's proportions.
     const tallPrimaryIcon =
       'w-[clamp(12px,3.6cqmin,28px)] h-[clamp(12px,3.6cqmin,28px)]';
-    const tallResetBtn =
-      'w-[clamp(28px,8cqmin,60px)] h-[clamp(28px,8cqmin,60px)]';
+    const tallResetBtn = tallPrimaryBtn;
     const tallResetIcon =
-      'w-[clamp(10px,2.5cqmin,18px)] h-[clamp(10px,2.5cqmin,18px)]';
+      'w-[clamp(11px,2.9cqmin,22px)] h-[clamp(11px,2.9cqmin,22px)]';
 
     return (
       <div

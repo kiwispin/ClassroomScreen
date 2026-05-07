@@ -11,10 +11,11 @@ export type StopwatchConfig = {
 };
 
 const DIGIT_SIZE = 'text-[clamp(36px,min(18cqw,46cqh),280px)]';
+// Play/Pause and Reset share diameter; Reset icon a touch smaller inside.
 const BTN_SIZE = 'w-[clamp(36px,min(11cqw,28cqh),96px)] h-[clamp(36px,min(11cqw,28cqh),96px)]';
 const PLAY_ICON_SIZE = 'w-[clamp(12px,min(3.6cqw,9cqh),34px)] h-[clamp(12px,min(3.6cqw,9cqh),34px)]';
-const RESET_BTN_SIZE = 'w-[clamp(28px,min(8cqw,22cqh),68px)] h-[clamp(28px,min(8cqw,22cqh),68px)]';
-const RESET_ICON_SIZE = 'w-[clamp(10px,min(2.5cqw,6cqh),20px)] h-[clamp(10px,min(2.5cqw,6cqh),20px)]';
+const RESET_BTN_SIZE = BTN_SIZE;
+const RESET_ICON_SIZE = 'w-[clamp(11px,min(2.9cqw,7cqh),26px)] h-[clamp(11px,min(2.9cqw,7cqh),26px)]';
 
 export default function Stopwatch({ instance }: { instance: WidgetInstance }) {
   const updateConfig = useAppStore((s) => s.updateWidgetConfig);
