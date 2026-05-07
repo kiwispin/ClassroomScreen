@@ -86,15 +86,15 @@ export function PolyDie({
   if (sides === 20) {
     return (
       <svg viewBox="0 0 120 120" className={className} aria-hidden style={{ overflow: 'visible' }}>
-        <polygon points="60,8 110,40 96,88 60,114 24,88 10,40" fill="#f8fafc" stroke="#94a3b8" strokeWidth="0.7" />
-        <polygon points="60,8 60,48 110,40" fill="#b8bdc3" stroke="#94a3b8" strokeWidth="0.7" />
-        <polygon points="60,8 10,40 60,48" fill="#d4d8dd" stroke="#94a3b8" strokeWidth="0.7" />
-        <polygon points="10,40 24,88 60,48" fill="#e5e7eb" stroke="#94a3b8" strokeWidth="0.7" />
-        <polygon points="110,40 60,48 96,88" fill="#c5c9ce" stroke="#94a3b8" strokeWidth="0.7" />
-        <polygon points="24,88 60,114 60,48" fill="#cfd3d8" stroke="#94a3b8" strokeWidth="0.7" />
-        <polygon points="96,88 60,48 60,114" fill="#aeb4bb" stroke="#94a3b8" strokeWidth="0.7" />
-        <polygon points="24,88 96,88 60,48" fill="#f8fafc" stroke="#94a3b8" strokeWidth="0.7" />
-        <text x="60" y="78" textAnchor="middle" dominantBaseline="middle" fill="#0f172a" fontSize="24" fontWeight="800">
+        <polygon points="60,17 98,48 92,79 60,103 28,79 22,48" fill="#f8fafc" stroke="#94a3b8" strokeWidth="0.8" />
+        <polygon points="60,17 98,48 65,48" fill="#b8bdc3" stroke="#94a3b8" strokeWidth="0.8" />
+        <polygon points="60,17 55,48 22,48" fill="#cdd1d6" stroke="#94a3b8" strokeWidth="0.8" />
+        <polygon points="22,48 55,48 43,78 28,79" fill="#e5e7eb" stroke="#94a3b8" strokeWidth="0.8" />
+        <polygon points="98,48 92,79 77,78 65,48" fill="#c4c8ce" stroke="#94a3b8" strokeWidth="0.8" />
+        <polygon points="28,79 43,78 60,103" fill="#aeb4ba" stroke="#94a3b8" strokeWidth="0.8" />
+        <polygon points="92,79 60,103 77,78" fill="#d1d5db" stroke="#94a3b8" strokeWidth="0.8" />
+        <polygon points="55,48 65,48 77,78 43,78" fill="#fafafa" stroke="#94a3b8" strokeWidth="0.8" />
+        <text x="60" y="66" textAnchor="middle" dominantBaseline="middle" fill="#0f172a" fontSize="24" fontWeight="800">
           {value}
         </text>
       </svg>
