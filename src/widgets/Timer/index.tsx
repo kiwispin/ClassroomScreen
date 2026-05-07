@@ -99,8 +99,11 @@ const ProgressRing = ({ fraction }: { fraction: number }) => {
 
 // ----------------------------------------------------------------------------
 
-type AspectMode = 'tall' | 'wide';
-const TALL_THRESHOLD = 1.6; // aspect (w / h) below which we use the ring layout
+type AspectMode = 'tall' | 'medium' | 'wide';
+// aspect = width / height
+const TALL_THRESHOLD = 1.5;   // < this → big ring around digits
+const WIDE_THRESHOLD = 2.4;   // ≥ this → no ring, ultra-wide
+// in between → small ring on left + digits in middle + controls on right
 
 export default function Timer({ instance }: { instance: WidgetInstance }) {
   const updateConfig = useAppStore((s) => s.updateWidgetConfig);
@@ -163,7 +166,10 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
       if (height === 0) return;
       const ratio = width / height;
       setAspect((prev) => {
-        const next: AspectMode = ratio < TALL_THRESHOLD ? 'tall' : 'wide';
+        const next: AspectMode =
+          ratio < TALL_THRESHOLD ? 'tall'
+          : ratio < WIDE_THRESHOLD ? 'medium'
+          : 'wide';
         return prev === next ? prev : next;
       });
     });
@@ -330,7 +336,67 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     );
   }
 
-  // === WIDE layout =========================================================
+  // === MEDIUM layout (ring on the left + per-digit +/- + controls right) ===
+
+  if (aspect === 'medium') {
+    return (
+      <div
+        ref={containerRef}
+        className="relative h-full w-full flex items-center p-3 gap-3"
+        style={{ containerType: 'size' as const }}
+      >
+        <div className="aspect-square h-full max-h-full max-w-[35%] flex items-center justify-center shrink-0">
+          <ProgressRing fraction={fraction} />
+        </div>
+
+        <div
+          className={
+            'flex-1 min-w-0 flex items-center justify-center gap-1 overflow-hidden ' +
+            (flash ? 'text-rose-500 animate-pulse' : '')
+          }
+        >
+          <DigitColumn value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
+          <DigitColumn value={mOnes} onAdjust={(d) => adjustDigit(1, d)} disabled={running} />
+          <span className={`font-bold ${W_DIGIT} leading-none mx-0.5 mb-[2cqh]`}>:</span>
+          <DigitColumn value={sTens} onAdjust={(d) => adjustDigit(2, d)} disabled={running} />
+          <DigitColumn value={sOnes} onAdjust={(d) => adjustDigit(3, d)} disabled={running} />
+        </div>
+
+        <div className="flex flex-col items-center justify-center gap-1.5 shrink-0">
+          {!running ? (
+            <button
+              onClick={start}
+              disabled={fullMs === 0}
+              className={`rounded-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white flex items-center justify-center shadow-sm transition-colors ${W_BTN}`}
+              aria-label="Start"
+              title="Start"
+            >
+              <Play className={`${W_PLAY_ICON} ml-0.5`} fill="currentColor" />
+            </button>
+          ) : (
+            <button
+              onClick={pause}
+              className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center shadow-sm transition-colors ${W_BTN}`}
+              aria-label="Pause"
+              title="Pause"
+            >
+              <Pause className={W_PLAY_ICON} fill="currentColor" />
+            </button>
+          )}
+          <button
+            onClick={reset}
+            className={`rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors ${W_RESET_BTN}`}
+            aria-label="Reset"
+            title="Reset"
+          >
+            <Square className={W_RESET_ICON} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // === WIDE layout (ultra-wide, no ring) ===================================
 
   return (
     <div
