@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Dices } from 'lucide-react';
 import type { WidgetInstance } from '../../store/types';
-import { rollDice, pickInRange, DIE_GLYPHS, type DiceMode } from './logic';
+import { rollDice, pickInRange, type DiceMode } from './logic';
 
 export type DiceConfig = {
   mode?: DiceMode;
@@ -12,6 +12,48 @@ export type DiceConfig = {
 
 const ROLL_TOTAL_MS = 900;
 const tickInterval = (t: number) => 50 + Math.pow(t, 2.2) * 160;
+
+type DieFaceProps = {
+  value: number;
+  className?: string;
+  soft?: boolean;
+};
+
+const PIP_POSITIONS: Record<number, Array<[number, number]>> = {
+  1: [[50, 50]],
+  2: [[30, 30], [70, 70]],
+  3: [[30, 30], [50, 50], [70, 70]],
+  4: [[30, 30], [70, 30], [30, 70], [70, 70]],
+  5: [[30, 30], [70, 30], [50, 50], [30, 70], [70, 70]],
+  6: [[30, 26], [70, 26], [30, 50], [70, 50], [30, 74], [70, 74]],
+};
+
+export function DieFace({ value, className = '', soft = false }: DieFaceProps) {
+  const pips = PIP_POSITIONS[Math.max(1, Math.min(6, value))] ?? PIP_POSITIONS[1];
+
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      className={className}
+      aria-hidden
+      style={{ overflow: 'visible' }}
+    >
+      <rect
+        x="7"
+        y="7"
+        width="86"
+        height="86"
+        rx="11"
+        fill={soft ? '#f8fafc' : 'white'}
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      {pips.map(([cx, cy], i) => (
+        <circle key={i} cx={cx} cy={cy} r="7" fill="currentColor" />
+      ))}
+    </svg>
+  );
+}
 
 export default function Dice({ instance }: { instance: WidgetInstance }) {
   const cfg = instance.config as DiceConfig;
@@ -25,6 +67,14 @@ export default function Dice({ instance }: { instance: WidgetInstance }) {
   const [rolling, setRolling] = useState(false);
   const [revealedAt, setRevealedAt] = useState(0);
   const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setDice(rollDice(count));
+  }, [count]);
+
+  useEffect(() => {
+    setRangeValue(pickInRange(min, max));
+  }, [min, max]);
 
   useEffect(
     () => () => {
@@ -63,20 +113,24 @@ export default function Dice({ instance }: { instance: WidgetInstance }) {
         <div
           key={revealedAt}
           className={
-            'flex items-center justify-center flex-wrap leading-none transition-transform ' +
-            'gap-[clamp(4px,min(2cqw,4cqh),16px)] ' +
-            'text-[clamp(40px,min(20cqw,52cqh),260px)] ' +
+            'flex max-w-full items-center justify-center leading-none transition-transform ' +
+            'gap-[clamp(8px,min(3cqw,5cqh),22px)] ' +
+            (count > 2 ? 'flex-wrap' : '') + ' ' +
             (rolling ? 'animate-[shake_120ms_linear_infinite]' : 'animate-[settle_350ms_ease-out]')
           }
+          style={{ color: 'var(--w-text, #0f172a)' }}
         >
           {dice.map((d, i) => (
-            <span
+            <DieFace
               key={i}
-              className="tabular-nums"
-              style={{ color: 'var(--w-accent, #6366f1)' }}
-            >
-              {DIE_GLYPHS[d]}
-            </span>
+              value={d}
+              soft
+              className={
+                count === 1
+                  ? 'w-[clamp(112px,min(58cqw,60cqh),260px)]'
+                  : 'w-[clamp(72px,min(32cqw,38cqh),150px)]'
+              }
+            />
           ))}
         </div>
       ) : (
@@ -96,18 +150,16 @@ export default function Dice({ instance }: { instance: WidgetInstance }) {
         onClick={roll}
         disabled={rolling}
         className={
-          'rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 disabled:opacity-40 text-white flex items-center justify-center transition-colors ' +
-          'gap-1.5 px-[clamp(10px,min(3.5cqw,7cqh),24px)] py-[clamp(6px,min(2cqw,4.5cqh),12px)] ' +
-          'text-[clamp(13px,min(3cqw,6.5cqh),22px)] font-medium'
+          'rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 disabled:opacity-40 text-white flex items-center justify-center transition-colors shadow-sm ' +
+          'h-[clamp(46px,min(15cqw,15cqh),76px)] w-[clamp(46px,min(15cqw,15cqh),76px)]'
         }
         aria-label="Roll"
         title="Roll"
       >
         <Dices
-          className="w-[clamp(14px,min(3.5cqw,7cqh),24px)] h-[clamp(14px,min(3.5cqw,7cqh),24px)]"
+          className="w-[clamp(24px,min(7cqw,7cqh),38px)] h-[clamp(24px,min(7cqw,7cqh),38px)]"
           strokeWidth={2.25}
         />
-        <span>Roll</span>
       </button>
 
       <style>{`

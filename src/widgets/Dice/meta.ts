@@ -7,7 +7,7 @@ export const diceMeta: WidgetMeta = {
   label: 'Dice',
   Icon: Dices,
   defaultSize: { width: 320, height: 200 },
-  defaultConfig: { mode: 'dice', count: 2, min: 1, max: 100 },
+  defaultConfig: { mode: 'dice', count: 1, min: 1, max: 100 },
   Settings: DiceSettings,
   iconColor: 'text-rose-500',
 };
