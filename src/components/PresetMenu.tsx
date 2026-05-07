@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
-import { Folder, Plus, Save, Pencil, Trash2, Download, Upload } from 'lucide-react';
+import { Folder, Plus, Save, Pencil, Trash2, Download, Upload, CalendarClock } from 'lucide-react';
 import SettingsPopover from './SettingsPopover';
 import NamePromptDialog from './NamePromptDialog';
 import ConfirmDialog from './ConfirmDialog';
 import ToolButton from './ToolButton';
+import ScheduleEditor from './ScheduleEditor';
 import { useAppStore } from '../store/store';
 import { exportToFile, importFromFile, type ImportResult } from '../lib/preset-io';
 
@@ -30,7 +31,10 @@ export default function PresetMenu() {
 
   const [mode, setMode] = useState<Mode>({ kind: 'none' });
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const scheduleEnabled = useAppStore((s) => s.scheduleEnabled);
+  const scheduleCount = useAppStore((s) => s.schedule.length);
 
   const close = () => setMode({ kind: 'none' });
   const activeName = presets.find((p) => p.id === activeId)?.name ?? null;
@@ -181,6 +185,26 @@ export default function PresetMenu() {
                 className="hidden"
                 onChange={onImport}
               />
+              <button
+                onClick={() => {
+                  setScheduleOpen(true);
+                  closePopover();
+                }}
+                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-100 text-sm text-left"
+              >
+                <CalendarClock
+                  className={
+                    'w-4 h-4 ' + (scheduleEnabled ? 'text-indigo-600' : 'text-slate-500')
+                  }
+                  strokeWidth={1.75}
+                />
+                <span>
+                  Schedule
+                  {scheduleEnabled && scheduleCount > 0
+                    ? ` (${scheduleCount} on)`
+                    : '…'}
+                </span>
+              </button>
             </div>
 
             {status.kind !== 'idle' && (
@@ -238,6 +262,11 @@ export default function PresetMenu() {
           if (mode.kind === 'delete') deletePreset(mode.id);
           close();
         }}
+      />
+
+      <ScheduleEditor
+        open={scheduleOpen}
+        onClose={() => setScheduleOpen(false)}
       />
     </>
   );

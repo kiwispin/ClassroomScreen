@@ -5,6 +5,7 @@ import {
   DEFAULT_SCREEN,
   SCHEMA_VERSION,
   WidgetType,
+  ScheduleRule,
 } from './types';
 import { newId } from '../lib/uuid';
 import { getWidgetMeta } from '../widgets/registry';
@@ -32,6 +33,10 @@ type Actions = {
   updateActivePreset: () => void;
   renamePreset: (id: string, name: string) => void;
   deletePreset: (id: string) => void;
+  addScheduleRule: (rule: Omit<ScheduleRule, 'id'>) => void;
+  updateScheduleRule: (id: string, patch: Partial<Omit<ScheduleRule, 'id'>>) => void;
+  deleteScheduleRule: (id: string) => void;
+  toggleScheduleEnabled: () => void;
 };
 
 const cloneScreen = <T,>(s: T): T => JSON.parse(JSON.stringify(s));
@@ -43,6 +48,8 @@ const initialState: AppState = {
   activePresetId: null,
   annotateOpen: false,
   toolbarPinned: false,
+  schedule: [],
+  scheduleEnabled: false,
 };
 
 const nextZIndex = (widgets: { zIndex: number }[]): number =>
@@ -185,6 +192,24 @@ export const useAppStore = create<AppState & Actions>()(
           presets: s.presets.filter((p) => p.id !== id),
           activePresetId: s.activePresetId === id ? null : s.activePresetId,
         })),
+
+      addScheduleRule: (rule) =>
+        set((s) => ({
+          schedule: [...s.schedule, { ...rule, id: newId() }],
+        })),
+
+      updateScheduleRule: (id, patch) =>
+        set((s) => ({
+          schedule: s.schedule.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+        })),
+
+      deleteScheduleRule: (id) =>
+        set((s) => ({
+          schedule: s.schedule.filter((r) => r.id !== id),
+        })),
+
+      toggleScheduleEnabled: () =>
+        set((s) => ({ scheduleEnabled: !s.scheduleEnabled })),
     }),
     {
       name: 'classroomscreen-state',

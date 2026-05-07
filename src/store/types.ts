@@ -42,6 +42,16 @@ export type Preset = {
   updatedAt: number;
 };
 
+// Scheduler — auto-load a preset at a given time of day on selected weekdays.
+// daysOfWeek uses JS Date.getDay() values: 0 = Sunday … 6 = Saturday.
+// startTime is "HH:MM" in 24-hour local time.
+export type ScheduleRule = {
+  id: string;
+  presetId: string;
+  daysOfWeek: number[];
+  startTime: string;
+};
+
 export type AppState = {
   schemaVersion: number;
   current: ScreenState;
@@ -49,6 +59,8 @@ export type AppState = {
   activePresetId: string | null;
   annotateOpen: boolean;
   toolbarPinned: boolean;
+  schedule: ScheduleRule[];
+  scheduleEnabled: boolean;
 };
 
 export const DEFAULT_BACKGROUND: Background = {
