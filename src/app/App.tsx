@@ -5,6 +5,7 @@ import WidgetCanvas from '../components/WidgetCanvas';
 import BackgroundLayer from '../overlays/Background';
 import AnnotateOverlay from '../overlays/Annotate';
 import HelpOverlay from '../components/HelpOverlay';
+import GradientDefs from '../components/GradientDefs';
 import { useAppStore } from '../store/store';
 import { useFullscreen } from '../lib/useFullscreen';
 import { useGlobalShortcuts } from '../lib/useGlobalShortcuts';
@@ -45,6 +46,7 @@ export default function App() {
 
   return (
     <div className="relative h-full w-full overflow-hidden">
+      <GradientDefs />
       <BackgroundLayer bg={bg} />
       <WidgetCanvas focusMode={focusMode} />
       {!focusMode && <Toolbar />}

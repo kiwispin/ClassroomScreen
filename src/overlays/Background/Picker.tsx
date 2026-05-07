@@ -40,6 +40,7 @@ export default function BackgroundPicker() {
           Icon={Palette}
           label="background"
           title="Background"
+          iconColor="text-pink-500"
           onClick={open}
         />
       )}
