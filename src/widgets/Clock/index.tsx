@@ -60,20 +60,24 @@ const AnalogFace = ({ now, showSeconds }: { now: Date; showSeconds: boolean }) =
         strokeWidth="0.6"
       />
 
-      {/* Hour ticks */}
-      {hourTicks.map((t) => (
-        <line
-          key={t.i}
-          x1={t.x1}
-          y1={t.y1}
-          x2={t.x2}
-          y2={t.y2}
-          stroke="currentColor"
-          strokeOpacity={t.isMain ? 0.85 : 0.4}
-          strokeWidth={t.isMain ? 2.2 : 1.2}
-          strokeLinecap="round"
-        />
-      ))}
+      {/* Hour ticks. The 12 o'clock tick uses the theme accent so the
+          second colour reads even when "Show seconds" is off. */}
+      {hourTicks.map((t) => {
+        const isNoon = t.i === 0;
+        return (
+          <line
+            key={t.i}
+            x1={t.x1}
+            y1={t.y1}
+            x2={t.x2}
+            y2={t.y2}
+            stroke={isNoon ? 'var(--w-accent, #f43f5e)' : 'currentColor'}
+            strokeOpacity={isNoon ? 1 : t.isMain ? 0.85 : 0.4}
+            strokeWidth={t.isMain ? 2.6 : 1.2}
+            strokeLinecap="round"
+          />
+        );
+      })}
 
       {/* Hour hand */}
       <line
@@ -101,29 +105,23 @@ const AnalogFace = ({ now, showSeconds }: { now: Date; showSeconds: boolean }) =
 
       {/* Second hand — uses theme accent if available */}
       {showSeconds && (
-        <>
-          <line
-            x1="50"
-            y1="62"
-            x2="50"
-            y2="11"
-            stroke="var(--w-accent, #f43f5e)"
-            strokeWidth="1"
-            strokeLinecap="round"
-            transform={`rotate(${secDeg} 50 50)`}
-            style={{ transition: 'transform 100ms linear' }}
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="2"
-            fill="var(--w-accent, #f43f5e)"
-          />
-        </>
+        <line
+          x1="50"
+          y1="62"
+          x2="50"
+          y2="11"
+          stroke="var(--w-accent, #f43f5e)"
+          strokeWidth="1"
+          strokeLinecap="round"
+          transform={`rotate(${secDeg} 50 50)`}
+          style={{ transition: 'transform 100ms linear' }}
+        />
       )}
 
-      {/* Pin */}
-      <circle cx="50" cy="50" r="1.5" fill="currentColor" />
+      {/* Centre cap — accent ring always visible so themes always show two
+          colours, with a smaller text-coloured pin on top. */}
+      <circle cx="50" cy="50" r="2.6" fill="var(--w-accent, #f43f5e)" />
+      <circle cx="50" cy="50" r="1.2" fill="currentColor" />
     </svg>
   );
 };
