@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { LayoutGrid, MousePointer2, Pencil } from 'lucide-react';
+import { LayoutGrid, Minimize2, MousePointer2, Pencil } from 'lucide-react';
 import { allWidgets } from '../widgets/registry';
 import { useAppStore } from '../store/store';
 import BackgroundPicker from '../overlays/Background/Picker';
@@ -15,6 +15,8 @@ export default function Toolbar() {
   const annotateOpen = useAppStore((s) => s.annotateOpen);
   const toggleAnnotate = useAppStore((s) => s.toggleAnnotate);
   const pinned = useAppStore((s) => s.toolbarPinned);
+  const hidden = useAppStore((s) => s.toolbarHidden ?? false);
+  const hideToolbar = useAppStore((s) => s.hideToolbar);
 
   const { primary, secondary } = useMemo(() => ({
     primary: allWidgets.filter((w) => !w.secondary),
@@ -50,7 +52,7 @@ export default function Toolbar() {
     <div
       className={
         'fixed bottom-0 left-0 right-0 z-[300] flex justify-center pb-3 pointer-events-none transition-transform duration-200 ' +
-        (visible ? 'translate-y-0' : 'translate-y-[120%]')
+        (!hidden && visible ? 'translate-y-0' : 'translate-y-[120%]')
       }
     >
       <div
@@ -146,6 +148,23 @@ export default function Toolbar() {
             )}
             <div className="mx-1 h-12 w-px shrink-0 bg-slate-200/90" />
             <PresetMenu />
+            <div className="mx-1 h-12 w-px shrink-0 bg-slate-200/90" />
+            <button
+              type="button"
+              onClick={hideToolbar}
+              title="Hide bar (B)"
+              aria-label="Hide bar"
+              className="group flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-xl bg-slate-100/80 text-slate-600 transition-colors hover:bg-slate-200/80 hover:text-slate-950"
+            >
+              <Minimize2
+                className="h-7 w-7"
+                strokeWidth={2.3}
+                style={{
+                  stroke: 'url(#grad-slate)',
+                  filter: 'drop-shadow(0 1px 0 rgba(15,23,42,0.08))',
+                }}
+              />
+            </button>
           </>
         )}
       </div>

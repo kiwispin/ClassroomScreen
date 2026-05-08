@@ -14,6 +14,7 @@ export default function App() {
   const bg = useAppStore((s) => s.current.background);
   const toggleAnnotate = useAppStore((s) => s.toggleAnnotate);
   const annotateOpen = useAppStore((s) => s.annotateOpen);
+  const toggleToolbarHidden = useAppStore((s) => s.toggleToolbarHidden);
   const { toggle: toggleFs } = useFullscreen();
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -32,6 +33,8 @@ export default function App() {
   useGlobalShortcuts({
     a: () => toggleAnnotate(),
     A: () => toggleAnnotate(),
+    b: () => toggleToolbarHidden(),
+    B: () => toggleToolbarHidden(),
     f: () => toggleFs(),
     F: () => toggleFs(),
     z: () => setFocusMode((v) => !v),

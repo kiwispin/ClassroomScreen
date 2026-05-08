@@ -16,6 +16,7 @@ const reset = () =>
     annotateUndoRequest: 0,
     annotateClearRequest: 0,
     toolbarPinned: false,
+    toolbarHidden: false,
   });
 
 describe('app store', () => {
@@ -120,6 +121,16 @@ describe('app store', () => {
     expect(s.annotateCanUndo).toBe(true);
     expect(s.annotateUndoRequest).toBe(1);
     expect(s.annotateClearRequest).toBe(1);
+  });
+
+  it('toggles and sets toolbar hidden state', () => {
+    expect(useAppStore.getState().toolbarHidden).toBe(false);
+    useAppStore.getState().hideToolbar();
+    expect(useAppStore.getState().toolbarHidden).toBe(true);
+    useAppStore.getState().showToolbar();
+    expect(useAppStore.getState().toolbarHidden).toBe(false);
+    useAppStore.getState().toggleToolbarHidden();
+    expect(useAppStore.getState().toolbarHidden).toBe(true);
   });
 
   it('savePresetAs creates a new preset from current state', () => {

@@ -4,6 +4,7 @@ type Row = { keys: string[]; description: string };
 
 const ROWS: Row[] = [
   { keys: ['A'], description: 'Toggle Annotate' },
+  { keys: ['B'], description: 'Hide / show widget bar' },
   { keys: ['F'], description: 'Toggle fullscreen' },
   { keys: ['Z'], description: 'Toggle focus mode (hide all chrome)' },
   { keys: ['?'], description: 'Show this help' },

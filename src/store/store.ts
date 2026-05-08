@@ -34,6 +34,9 @@ type Actions = {
   requestAnnotateUndo: () => void;
   requestAnnotateClear: () => void;
   toggleToolbarPinned: () => void;
+  toggleToolbarHidden: () => void;
+  hideToolbar: () => void;
+  showToolbar: () => void;
   savePresetAs: (name: string) => void;
   switchToPreset: (id: string) => void;
   updateActivePreset: () => void;
@@ -60,6 +63,7 @@ const initialState: AppState = {
   annotateUndoRequest: 0,
   annotateClearRequest: 0,
   toolbarPinned: false,
+  toolbarHidden: false,
   schedule: [],
   scheduleEnabled: false,
 };
@@ -163,6 +167,12 @@ export const useAppStore = create<AppState & Actions>()(
         set((s) => ({ annotateClearRequest: s.annotateClearRequest + 1 })),
 
       toggleToolbarPinned: () => set((s) => ({ toolbarPinned: !s.toolbarPinned })),
+
+      toggleToolbarHidden: () => set((s) => ({ toolbarHidden: !s.toolbarHidden })),
+
+      hideToolbar: () => set({ toolbarHidden: true }),
+
+      showToolbar: () => set({ toolbarHidden: false }),
 
       savePresetAs: (name) =>
         set((s) => {

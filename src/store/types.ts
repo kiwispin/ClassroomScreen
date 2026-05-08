@@ -65,6 +65,7 @@ export type AppState = {
   annotateUndoRequest: number;
   annotateClearRequest: number;
   toolbarPinned: boolean;
+  toolbarHidden: boolean;
   schedule: ScheduleRule[];
   scheduleEnabled: boolean;
 };
