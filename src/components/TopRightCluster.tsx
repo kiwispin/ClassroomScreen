@@ -1,6 +1,5 @@
-import { Maximize2, Minimize2, HelpCircle, Pin, PinOff } from 'lucide-react';
+import { Maximize2, Minimize2, HelpCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useAppStore } from '../store/store';
 import { useFullscreen } from '../lib/useFullscreen';
 
 type Props = {
@@ -15,8 +14,6 @@ type ButtonSpec = {
 };
 
 export default function TopRightCluster({ onOpenHelp }: Props) {
-  const pinned = useAppStore((s) => s.toolbarPinned);
-  const togglePinned = useAppStore((s) => s.toggleToolbarPinned);
   const { isFs, toggle: toggleFs } = useFullscreen();
 
   const buttons: ButtonSpec[] = [
@@ -30,12 +27,6 @@ export default function TopRightCluster({ onOpenHelp }: Props) {
       Icon: HelpCircle,
       title: 'Keyboard shortcuts (?)',
       onClick: onOpenHelp,
-    },
-    {
-      Icon: pinned ? Pin : PinOff,
-      title: pinned ? 'Toolbar pinned (click to auto-hide)' : 'Toolbar auto-hides (click to pin)',
-      onClick: togglePinned,
-      active: pinned,
     },
   ];
 

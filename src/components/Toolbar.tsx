@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { LayoutGrid, Minimize2, MousePointer2, Pencil } from 'lucide-react';
 import { allWidgets } from '../widgets/registry';
 import { useAppStore } from '../store/store';
@@ -8,13 +8,10 @@ import PresetMenu from './PresetMenu';
 import ToolButton from './ToolButton';
 import SettingsPopover from './SettingsPopover';
 
-const IDLE_MS = 4_000;
-
 export default function Toolbar() {
   const addWidget = useAppStore((s) => s.addWidget);
   const annotateOpen = useAppStore((s) => s.annotateOpen);
   const toggleAnnotate = useAppStore((s) => s.toggleAnnotate);
-  const pinned = useAppStore((s) => s.toolbarPinned);
   const hidden = useAppStore((s) => s.toolbarHidden ?? false);
   const hideToolbar = useAppStore((s) => s.hideToolbar);
 
@@ -23,36 +20,11 @@ export default function Toolbar() {
     secondary: allWidgets.filter((w) => w.secondary),
   }), []);
 
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    if (pinned) {
-      setVisible(true);
-      return;
-    }
-    let timer: number | null = null;
-    const arm = () => {
-      if (timer) window.clearTimeout(timer);
-      setVisible(true);
-      timer = window.setTimeout(() => setVisible(false), IDLE_MS);
-    };
-    const onMove = () => arm();
-    const onKey = () => arm();
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('keydown', onKey);
-    arm();
-    return () => {
-      if (timer) window.clearTimeout(timer);
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [pinned]);
-
   return (
     <div
       className={
         'fixed bottom-0 left-0 right-0 z-[300] flex justify-center pb-3 pointer-events-none transition-transform duration-200 ' +
-        (!hidden && visible ? 'translate-y-0' : 'translate-y-[120%]')
+        (!hidden ? 'translate-y-0' : 'translate-y-[120%]')
       }
     >
       <div
