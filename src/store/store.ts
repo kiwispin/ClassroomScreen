@@ -25,6 +25,9 @@ type Actions = {
   updateWidgetSize: (id: string, width: number, height: number) => void;
   focusWidget: (id: string) => void;
   updateWidgetConfig: (id: string, patch: Record<string, unknown>) => void;
+  setBackgroundMusic: (id: string, name: string) => void;
+  setBackgroundMusicVolume: (volume: number) => void;
+  clearBackgroundMusic: () => void;
   setBackground: (bg: import('./types').Background) => void;
   toggleAnnotate: () => void;
   setAnnotateTool: (tool: 'pen' | 'eraser') => void;
@@ -54,6 +57,9 @@ const initialState: AppState = {
   schemaVersion: SCHEMA_VERSION,
   current: DEFAULT_SCREEN,
   presets: [],
+  backgroundMusicId: undefined,
+  backgroundMusicName: undefined,
+  backgroundMusicVolume: 0.55,
   activePresetId: null,
   annotateOpen: false,
   annotateTool: 'pen',
@@ -144,6 +150,15 @@ export const useAppStore = create<AppState & Actions>()(
             ),
           },
         })),
+
+      setBackgroundMusic: (id, name) =>
+        set({ backgroundMusicId: id, backgroundMusicName: name }),
+
+      setBackgroundMusicVolume: (volume) =>
+        set({ backgroundMusicVolume: Math.max(0, Math.min(1, volume)) }),
+
+      clearBackgroundMusic: () =>
+        set({ backgroundMusicId: undefined, backgroundMusicName: undefined }),
 
       setBackground: (bg) =>
         set((s) => ({

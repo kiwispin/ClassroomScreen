@@ -4,6 +4,7 @@ import type { WidgetInstance } from '../../store/types';
 import { useAppStore } from '../../store/store';
 import { playSfx, type SfxName } from '../../lib/audio';
 import { playCustomAudio } from '../../lib/audio-storage';
+import { stopBackgroundMusic } from '../../lib/background-music';
 import { formatMmss, remainingMs, type TimerState } from './logic';
 
 export type TimerSfx = SfxName | 'custom';
@@ -36,6 +37,8 @@ const fromDigits = (
 
 const W_DIGIT = 'text-[clamp(36px,min(16cqw,52cqh),320px)]';
 const W_PM = 'w-[clamp(14px,min(3cqw,9cqh),32px)] h-[clamp(14px,min(3cqw,9cqh),32px)]';
+const W_ADJUST_BUTTON =
+  'inline-flex w-[clamp(36px,min(10cqw,20cqh),64px)] h-[clamp(36px,min(10cqw,20cqh),64px)] items-center justify-center p-0 leading-none';
 // Play/Pause and Reset share the same outer diameter — only the inner icon
 // is slightly smaller on Reset so the square doesn't visually outweigh the play triangle.
 const W_BTN = 'w-[clamp(36px,min(11cqw,32cqh),96px)] h-[clamp(36px,min(11cqw,32cqh),96px)]';
@@ -52,23 +55,25 @@ type DigitColumnProps = {
 const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
   <div className="flex flex-col items-center justify-center select-none">
     <button
+      type="button"
       onClick={() => onAdjust(1)}
       disabled={disabled}
       tabIndex={-1}
-      className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
+      className={`${W_ADJUST_BUTTON} rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
       aria-label="Increase"
     >
-      <Plus className={W_PM} strokeWidth={2.5} />
+      <Plus className={`${W_PM} pointer-events-none`} strokeWidth={2.5} />
     </button>
     <div className={`font-bold tabular-nums ${W_DIGIT} leading-none`}>{value}</div>
     <button
+      type="button"
       onClick={() => onAdjust(-1)}
       disabled={disabled}
       tabIndex={-1}
-      className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
+      className={`${W_ADJUST_BUTTON} rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
       aria-label="Decrease"
     >
-      <Minus className={W_PM} strokeWidth={2.5} />
+      <Minus className={`${W_PM} pointer-events-none`} strokeWidth={2.5} />
     </button>
   </div>
 );
@@ -142,6 +147,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
   useEffect(() => {
     if (running && atZero && !firedRef.current) {
       firedRef.current = true;
+      stopBackgroundMusic();
       if (sfx === 'custom' && customSoundId) {
         playCustomAudio(customSoundId);
       } else if (sfx !== 'custom') {
@@ -271,6 +277,8 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     const tallResetBtn = tallPrimaryBtn;
     const tallResetIcon =
       'w-[clamp(11px,2.9cqmin,22px)] h-[clamp(11px,2.9cqmin,22px)]';
+    const tallAdjustButton =
+      'inline-flex w-[clamp(36px,12cqmin,72px)] h-[clamp(36px,12cqmin,72px)] items-center justify-center p-0 leading-none';
 
     return (
       <div
@@ -293,25 +301,27 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           }
         >
           <button
+            type="button"
             onClick={() => adjustMinutes(1)}
             disabled={running}
             tabIndex={-1}
-            className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
+            className={`${tallAdjustButton} rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
             aria-label="Add a minute"
           >
-            <Plus className={tallPm} strokeWidth={2.5} />
+            <Plus className={`${tallPm} pointer-events-none`} strokeWidth={2.5} />
           </button>
           <div className={`font-bold tabular-nums ${tallDigit} leading-none`}>
             {formatMmss(displayMs)}
           </div>
           <button
+            type="button"
             onClick={() => adjustMinutes(-1)}
             disabled={running}
             tabIndex={-1}
-            className="p-2 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors"
+            className={`${tallAdjustButton} rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
             aria-label="Remove a minute"
           >
-            <Minus className={tallPm} strokeWidth={2.5} />
+            <Minus className={`${tallPm} pointer-events-none`} strokeWidth={2.5} />
           </button>
         </div>
 

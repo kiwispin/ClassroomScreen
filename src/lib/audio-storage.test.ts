@@ -41,6 +41,7 @@ describe('audio-storage put/get/delete', () => {
 describe('collectReferencedAudioIds', () => {
   it('finds ids on Timer widgets in current + presets', () => {
     const state = {
+      backgroundMusicId: 'music',
       current: {
         widgets: [
           { type: 'timer', config: { customSoundId: 'a' } },
@@ -58,16 +59,18 @@ describe('collectReferencedAudioIds', () => {
         },
       ],
     };
-    expect(collectReferencedAudioIds(state)).toEqual(new Set(['a', 'b']));
+    expect(collectReferencedAudioIds(state)).toEqual(new Set(['music', 'a', 'b']));
   });
 });
 
 describe('pruneOrphanAudio', () => {
   it('removes IDB entries that are not referenced', async () => {
     const used = await putAudio(file('used.mp3'));
+    const music = await putAudio(file('music.ogg', 'audio/ogg'));
     const orphan = await putAudio(file('orphan.mp3'));
 
     const state = {
+      backgroundMusicId: music.id,
       current: {
         widgets: [
           { type: 'timer', config: { customSoundId: used.id } },
@@ -79,5 +82,6 @@ describe('pruneOrphanAudio', () => {
     expect(removed).toBe(1);
     expect(await getAudio(orphan.id)).toBeUndefined();
     expect(await getAudio(used.id)).toBeDefined();
+    expect(await getAudio(music.id)).toBeDefined();
   });
 });

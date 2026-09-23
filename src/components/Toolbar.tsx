@@ -7,6 +7,7 @@ import AnnotateToolBar from '../overlays/Annotate/ToolBar';
 import PresetMenu from './PresetMenu';
 import ToolButton from './ToolButton';
 import SettingsPopover from './SettingsPopover';
+import BackgroundMusicControl from './BackgroundMusicControl';
 
 export default function Toolbar() {
   const addWidget = useAppStore((s) => s.addWidget);
@@ -114,6 +115,7 @@ export default function Toolbar() {
                         }}
                       />
                     ))}
+                    <BackgroundMusicControl variant="popover" />
                   </div>
                 )}
               </SettingsPopover>

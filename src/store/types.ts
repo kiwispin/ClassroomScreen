@@ -56,6 +56,9 @@ export type AppState = {
   schemaVersion: number;
   current: ScreenState;
   presets: Preset[];
+  backgroundMusicId?: string;
+  backgroundMusicName?: string;
+  backgroundMusicVolume: number;
   activePresetId: string | null;
   annotateOpen: boolean;
   annotateTool: 'pen' | 'eraser';

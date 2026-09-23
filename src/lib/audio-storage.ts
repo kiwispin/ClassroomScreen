@@ -71,8 +71,10 @@ type ScreenLike = {
 export const collectReferencedAudioIds = (state: {
   current: ScreenLike;
   presets: Array<{ state: ScreenLike }>;
+  backgroundMusicId?: string;
 }): Set<string> => {
   const ids = new Set<string>();
+  if (typeof state.backgroundMusicId === 'string') ids.add(state.backgroundMusicId);
   const collectFrom = (scr: ScreenLike) => {
     for (const w of scr.widgets) {
       if (w.type === 'timer') {
@@ -89,6 +91,7 @@ export const collectReferencedAudioIds = (state: {
 export const pruneOrphanAudio = async (state: {
   current: ScreenLike;
   presets: Array<{ state: ScreenLike }>;
+  backgroundMusicId?: string;
 }): Promise<number> => {
   const referenced = collectReferencedAudioIds(state);
   const allKeys = await listAudioKeys();
