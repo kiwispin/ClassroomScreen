@@ -10,7 +10,15 @@ import {
 } from '../../lib/audio-storage';
 import type { WidgetSettingsProps } from '../Demo/meta';
 import { parseMmss, formatMmss } from './logic';
-import type { TimerConfig, TimerSfx } from '.';
+import { TIMER_WARNING_OPTIONS } from './logic';
+import type { TimerConfig, TimerSfx, TimerWarningSfx } from '.';
+
+const WARNING_SOUNDS: Array<{ value: TimerWarningSfx; label: string }> = [
+  { value: 'none', label: 'Visual only' },
+  { value: 'chime', label: 'Chime' },
+  { value: 'gentle', label: 'Gentle' },
+  { value: 'ding', label: 'Ding' },
+];
 
 export default function TimerSettings({ instance }: WidgetSettingsProps) {
   const updateConfig = useAppStore((s) => s.updateWidgetConfig);
@@ -18,6 +26,8 @@ export default function TimerSettings({ instance }: WidgetSettingsProps) {
   const fullMs = cfg.fullDurationMs ?? 5 * 60_000;
   const [draft, setDraft] = useState(formatMmss(fullMs));
   const sfx: TimerSfx = cfg.sfx ?? 'bell';
+  const warningMinutes = cfg.warningMinutes ?? [];
+  const warningSfx: TimerWarningSfx = cfg.warningSfx ?? 'chime';
   const customId = cfg.customSoundId;
   const customName = cfg.customSoundName;
   const fileInput = useRef<HTMLInputElement | null>(null);
@@ -93,6 +103,13 @@ export default function TimerSettings({ instance }: WidgetSettingsProps) {
     });
   };
 
+  const toggleWarning = (minutes: number) => {
+    const next = warningMinutes.includes(minutes)
+      ? warningMinutes.filter((value) => value !== minutes)
+      : [...warningMinutes, minutes].sort((a, b) => b - a);
+    updateConfig(instance.id, { warningMinutes: next });
+  };
+
   return (
     <SettingsPopover
       trigger={(open) => (
@@ -133,6 +150,43 @@ export default function TimerSettings({ instance }: WidgetSettingsProps) {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="flex flex-col gap-2 border-t border-slate-200 pt-2">
+            <div>
+              <span className="text-xs uppercase text-slate-500">Time warnings</span>
+              <p className="text-[11px] text-slate-500">Pulse the timer at selected checkpoints.</p>
+            </div>
+            <div className="grid grid-cols-3 gap-1">
+              {TIMER_WARNING_OPTIONS.map((minutes) => (
+                <label
+                  key={minutes}
+                  className="flex cursor-pointer items-center justify-center gap-1 rounded bg-slate-100 px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-200"
+                >
+                  <input
+                    type="checkbox"
+                    checked={warningMinutes.includes(minutes)}
+                    onChange={() => toggleWarning(minutes)}
+                    className="accent-indigo-500"
+                  />
+                  {minutes} min
+                </label>
+              ))}
+            </div>
+            <label className="flex items-center justify-between gap-2 text-xs text-slate-600">
+              <span>Warning sound</span>
+              <select
+                value={warningSfx}
+                onChange={(e) =>
+                  updateConfig(instance.id, { warningSfx: e.target.value as TimerWarningSfx })
+                }
+                className="rounded border border-slate-300 bg-white px-2 py-1 text-xs"
+              >
+                {WARNING_SOUNDS.map((sound) => (
+                  <option key={sound.value} value={sound.value}>{sound.label}</option>
+                ))}
+              </select>
+            </label>
           </div>
 
           <div className="flex flex-col gap-1 border-t border-slate-200 pt-2">

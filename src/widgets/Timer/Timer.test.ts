@@ -1,5 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { remainingMs, parseMmss, formatMmss } from './logic';
+import { dueWarningMinutes, remainingMs, parseMmss, formatMmss } from './logic';
+
+describe('dueWarningMinutes', () => {
+  it('returns selected warnings as the timer crosses their thresholds', () => {
+    expect(dueWarningMinutes(5 * 60_000, [5, 2, 1], new Set())).toEqual([5]);
+    expect(dueWarningMinutes(59_000, [5, 2, 1], new Set())).toEqual([1, 2, 5]);
+  });
+
+  it('does not repeat fired warnings or warn at zero', () => {
+    expect(dueWarningMinutes(60_000, [5, 2, 1], new Set([1, 5]))).toEqual([2]);
+    expect(dueWarningMinutes(0, [5, 2, 1], new Set())).toEqual([]);
+  });
+});
 
 describe('parseMmss', () => {
   it('parses MM:SS', () => {

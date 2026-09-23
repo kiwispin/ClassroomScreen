@@ -4,6 +4,19 @@ export type TimerState = {
   startedAt: number | null;
 };
 
+export const TIMER_WARNING_OPTIONS = [5, 2, 1] as const;
+
+export const dueWarningMinutes = (
+  remaining: number,
+  warningMinutes: readonly number[],
+  firedMinutes: ReadonlySet<number>,
+): number[] => {
+  if (remaining <= 0) return [];
+  return warningMinutes
+    .filter((minutes) => minutes > 0 && remaining <= minutes * 60_000 && !firedMinutes.has(minutes))
+    .sort((a, b) => a - b);
+};
+
 export const parseMmss = (s: string): number | null => {
   const m = /^(\d{1,2}):([0-5]\d)$/.exec(s.trim());
   if (!m) return null;

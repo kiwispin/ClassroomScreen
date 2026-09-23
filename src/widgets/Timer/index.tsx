@@ -5,9 +5,10 @@ import { useAppStore } from '../../store/store';
 import { playSfx, type SfxName } from '../../lib/audio';
 import { playCustomAudio } from '../../lib/audio-storage';
 import { stopBackgroundMusic } from '../../lib/background-music';
-import { formatMmss, remainingMs, type TimerState } from './logic';
+import { dueWarningMinutes, formatMmss, remainingMs, type TimerState } from './logic';
 
 export type TimerSfx = SfxName | 'custom';
+export type TimerWarningSfx = SfxName | 'none';
 
 export type TimerConfig = {
   durationMs?: number;
@@ -18,6 +19,8 @@ export type TimerConfig = {
   customSoundId?: string;
   customSoundName?: string;
   autoReset?: boolean;
+  warningMinutes?: number[];
+  warningSfx?: TimerWarningSfx;
 };
 
 const MAX_TOTAL_SECONDS = 99 * 60 + 59;
@@ -130,6 +133,8 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
   const sfx: TimerSfx = cfg.sfx ?? 'bell';
   const customSoundId = cfg.customSoundId;
   const autoReset = cfg.autoReset ?? false;
+  const warningMinutes = cfg.warningMinutes ?? [];
+  const warningSfx: TimerWarningSfx = cfg.warningSfx ?? 'chime';
 
   const state: TimerState = { running, durationMs, startedAt };
 
@@ -144,9 +149,37 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
   const atZero = remaining <= 0;
 
   const firedRef = useRef(false);
+  const warningFiredRef = useRef<Set<number>>(new Set());
+  const warningFlashTimeoutRef = useRef<number | null>(null);
+  const [warningFlash, setWarningFlash] = useState(false);
+
+  useEffect(() => () => {
+    if (warningFlashTimeoutRef.current != null) {
+      window.clearTimeout(warningFlashTimeoutRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!running) return;
+    const due = dueWarningMinutes(remaining, warningMinutes, warningFiredRef.current);
+    if (due.length === 0) return;
+
+    due.forEach((minutes) => warningFiredRef.current.add(minutes));
+    setWarningFlash(true);
+    if (warningFlashTimeoutRef.current != null) {
+      window.clearTimeout(warningFlashTimeoutRef.current);
+    }
+    warningFlashTimeoutRef.current = window.setTimeout(() => {
+      setWarningFlash(false);
+      warningFlashTimeoutRef.current = null;
+    }, 900);
+    if (warningSfx !== 'none') playSfx(warningSfx);
+  }, [running, remaining, warningMinutes, warningSfx]);
+
   useEffect(() => {
     if (running && atZero && !firedRef.current) {
       firedRef.current = true;
+      warningFiredRef.current.clear();
       stopBackgroundMusic();
       if (sfx === 'custom' && customSoundId) {
         playCustomAudio(customSoundId);
@@ -203,6 +236,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
 
   const adjustDigit = (idx: 0 | 1 | 2 | 3, delta: 1 | -1) => {
     if (running) return;
+    warningFiredRef.current.clear();
     const digits = parseDigits(fullMs);
     const maxes = [9, 9, 5, 9];
     const max = maxes[idx];
@@ -221,6 +255,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
   // Tall layout uses a single +/- that bumps minutes by 1.
   const adjustMinutes = (delta: 1 | -1) => {
     if (running) return;
+    warningFiredRef.current.clear();
     const totalSec = Math.floor(fullMs / 1000);
     const minutes = Math.floor(totalSec / 60);
     const seconds = totalSec % 60;
@@ -254,6 +289,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     });
   };
   const reset = () => {
+    warningFiredRef.current.clear();
     updateConfig(instance.id, {
       running: false,
       startedAt: null,
@@ -262,6 +298,11 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
   };
 
   const flash = !running && remaining === 0 && fullMs > 0;
+  const timerVisual = flash
+    ? 'text-rose-500 animate-pulse'
+    : warningFlash
+      ? 'text-amber-500 animate-pulse'
+      : '';
 
   // === TALL layout (square-ish) ============================================
 
@@ -297,7 +338,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         <div
           className={
             'absolute inset-0 flex flex-col items-center justify-center select-none ' +
-            (flash ? 'text-rose-500 animate-pulse' : '')
+            timerVisual
           }
         >
           <button
@@ -376,7 +417,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         <div
           className={
             'flex-1 min-w-0 flex items-center justify-center gap-1 overflow-hidden ' +
-            (flash ? 'text-rose-500 animate-pulse' : '')
+            timerVisual
           }
         >
           <DigitColumn value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
@@ -435,7 +476,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
       <div
         className={
           'flex-1 min-w-0 flex items-center justify-center gap-1 overflow-hidden ' +
-          (flash ? 'text-rose-500 animate-pulse' : '')
+          timerVisual
         }
       >
         <DigitColumn value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
