@@ -14,6 +14,14 @@ const timer: WidgetInstance = {
   config: { theme: 'midnight' },
 };
 
+const clock: WidgetInstance = {
+  ...timer,
+  id: 'clock-theme-test',
+  type: 'clock',
+  size: { width: 280, height: 140 },
+  config: { theme: 'default', analog: true, showDate: true },
+};
+
 function ConnectedThemePicker() {
   const instance = useAppStore((state) =>
     state.current.widgets.find((widget) => widget.id === timer.id),
@@ -28,12 +36,31 @@ function ConnectedThemePicker() {
     <ThemePicker
       instanceId={instance.id}
       currentTheme={config.theme}
-      timerGlass={{ enabled: config.frostedGlass ?? false, opacity: config.glassOpacity }}
+      glass={{ enabled: config.frostedGlass ?? false, opacity: config.glassOpacity }}
     />
   );
 }
 
-describe('Timer theme popover', () => {
+function ConnectedClockThemePicker() {
+  const instance = useAppStore((state) =>
+    state.current.widgets.find((widget) => widget.id === clock.id),
+  );
+  if (!instance) return null;
+  const config = instance.config as {
+    theme?: string;
+    frostedGlass?: boolean;
+    glassOpacity?: number;
+  };
+  return (
+    <ThemePicker
+      instanceId={instance.id}
+      currentTheme={config.theme}
+      glass={{ enabled: config.frostedGlass ?? false, opacity: config.glassOpacity }}
+    />
+  );
+}
+
+describe('Color theme popover', () => {
   beforeEach(() => {
     useAppStore.setState((state) => ({
       current: { ...state.current, widgets: [{ ...timer, config: { ...timer.config } }] },
@@ -50,6 +77,9 @@ describe('Timer theme popover', () => {
     expect(glassToggle).not.toBeChecked();
     expect(opacity).toBeDisabled();
     expect(opacity).toHaveValue('75');
+    expect(opacity).toHaveAttribute('min', '20');
+    expect(opacity).toHaveAttribute('max', '100');
+    expect(opacity).toHaveAttribute('step', '5');
 
     await user.click(glassToggle);
     expect(opacity).toBeEnabled();
@@ -82,7 +112,34 @@ describe('Timer theme popover', () => {
     expect(screen.getByText('75%')).toBeInTheDocument();
   });
 
-  it('omits Timer glass controls when no Timer config is supplied', async () => {
+  it('offers the same persistent glass controls for Clock without changing clock options', async () => {
+    useAppStore.setState((state) => ({
+      current: { ...state.current, widgets: [{ ...clock, config: { ...clock.config } }] },
+    }));
+    const user = userEvent.setup();
+    render(<ConnectedClockThemePicker />);
+    await user.click(screen.getByRole('button', { name: 'Color theme' }));
+
+    const glassToggle = screen.getByRole('checkbox', { name: 'Frosted glass' });
+    const opacity = screen.getByRole('slider', { name: 'Glass opacity' });
+    expect(glassToggle).not.toBeChecked();
+    expect(opacity).toBeDisabled();
+    expect(opacity).toHaveValue('75');
+
+    await user.click(glassToggle);
+    fireEvent.change(opacity, { target: { value: '20' } });
+    await waitFor(() => expect(useAppStore.getState().current.widgets[0].config).toMatchObject({
+      frostedGlass: true,
+      glassOpacity: 20,
+      analog: true,
+      showDate: true,
+    }));
+
+    fireEvent.change(opacity, { target: { value: '100' } });
+    await waitFor(() => expect(useAppStore.getState().current.widgets[0].config.glassOpacity).toBe(100));
+  });
+
+  it('omits glass controls when none are supplied', async () => {
     const user = userEvent.setup();
     render(<ThemePicker instanceId="clock-theme-test" currentTheme="default" />);
     await user.click(screen.getByRole('button', { name: 'Color theme' }));

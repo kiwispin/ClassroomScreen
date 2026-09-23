@@ -47,7 +47,7 @@ export default function WidgetChrome({ instance }: { instance: WidgetInstance })
         <ThemePicker
           instanceId={instance.id}
           currentTheme={currentTheme}
-          timerGlass={instance.type === 'timer' ? {
+          glass={instance.type === 'timer' || instance.type === 'clock' ? {
             enabled: config.frostedGlass ?? false,
             opacity: config.glassOpacity,
           } : undefined}

@@ -148,21 +148,22 @@ export default function Clock({ instance }: { instance: WidgetInstance }) {
   });
 
   if (analog) {
+    const faceSizeClass = showDate
+      ? 'w-[min(86cqi,68cqb)] h-[min(86cqi,68cqb)]'
+      : 'w-[min(86cqi,86cqb)] h-[min(86cqi,86cqb)]';
     return (
       <div
-        className="h-full w-full flex flex-col items-center justify-center select-none p-3 gap-2"
+        className="h-full w-full flex flex-col items-center justify-center select-none gap-1 p-1"
         style={{ containerType: 'size' as const }}
       >
         <div
-          className="flex items-center justify-center"
-          style={{ width: 'min(80cqi, 80cqb)', height: 'min(80cqi, 80cqb)' }}
+          className={`flex shrink-0 items-center justify-center ${faceSizeClass}`}
         >
           <AnalogFace now={now} showSeconds={showSeconds} />
         </div>
         {showDate && (
           <div
-            className="opacity-60 text-center"
-            style={{ fontSize: 'min(4.5cqi, 5cqb)' }}
+            className="max-w-full break-words text-center text-[clamp(8px,min(4cqi,9cqb),22px)] leading-tight opacity-60"
           >
             {date}
           </div>
@@ -177,20 +178,29 @@ export default function Clock({ instance }: { instance: WidgetInstance }) {
     suffix = h >= 12 ? ' PM' : ' AM';
     h = h % 12 || 12;
   }
-  const time = `${pad(h)}:${pad(now.getMinutes())}${
+  const timeMain = `${pad(h)}:${pad(now.getMinutes())}${
     showSeconds ? `:${pad(now.getSeconds())}` : ''
-  }${suffix}`;
+  }`;
+  const widthEstimateEm =
+    timeMain.length * 0.62 + (suffix ? suffix.trim().length * 0.42 + 0.25 : 0);
+  const fitFontCqi = (90 / widthEstimateEm).toFixed(1);
 
   return (
     <div
-      className="h-full w-full flex flex-col items-center justify-center select-none gap-1 p-3"
+      className="h-full w-full flex flex-col items-center justify-center select-none gap-1 p-2"
       style={{ containerType: 'size' as const }}
     >
-      <div className="font-bold tabular-nums leading-none text-[clamp(32px,min(20cqw,46cqh),260px)]">
-        {time}
-      </div>
+      <time
+        dateTime={now.toISOString()}
+        aria-label={`${timeMain}${suffix}`}
+        className="inline-flex max-w-full shrink-0 items-baseline justify-center whitespace-nowrap font-bold tabular-nums leading-none"
+        style={{ fontSize: `min(22cqi, 46cqb, ${fitFontCqi}cqi)` }}
+      >
+        <span>{timeMain}</span>
+        {suffix && <span className="ml-[0.1em] text-[0.42em] font-semibold">{suffix.trim()}</span>}
+      </time>
       {showDate && (
-        <div className="opacity-60 text-[clamp(11px,min(4cqw,9cqh),28px)]">
+        <div className="max-w-full break-words text-center text-[clamp(8px,min(4cqi,9cqb),22px)] leading-tight opacity-60">
           {date}
         </div>
       )}

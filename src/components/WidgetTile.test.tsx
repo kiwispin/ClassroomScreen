@@ -43,17 +43,45 @@ describe('WidgetTile backgrounds', () => {
     expect(renderedTile().style.opacity).toBe('');
   });
 
-  it('keeps legacy Timer configs opaque and ignores glass fields on other widgets', () => {
+  it('keeps legacy Timer configs opaque and ignores glass fields on unrelated widgets', () => {
     const { rerender } = render(<WidgetTile instance={makeWidget('timer', { theme: 'midnight' })} />);
     expect(renderedTile().style.backgroundColor).toBe('rgb(15, 23, 42)');
     expect(renderedTile().style.backdropFilter).toBe('');
 
-    rerender(<WidgetTile instance={makeWidget('clock', {
+    rerender(<WidgetTile instance={makeWidget('stopwatch', {
       theme: 'default',
       frostedGlass: true,
       glassOpacity: 50,
     })} />);
     expect(renderedTile().style.backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(renderedTile().style.backdropFilter).toBe('');
+  });
+
+  it('applies optional glass to Clock backgrounds while preserving opaque defaults and content', () => {
+    const { rerender } = render(<WidgetTile instance={makeWidget('clock', {
+      theme: 'midnight',
+    })} />);
+    expect(renderedTile().style.backgroundColor).toBe('rgb(15, 23, 42)');
+    expect(renderedTile().style.backdropFilter).toBe('');
+
+    rerender(<WidgetTile instance={makeWidget('clock', {
+      theme: 'midnight', frostedGlass: true, glassOpacity: 20,
+    })} />);
+    expect(renderedTile().style.backgroundColor).toBe('rgba(15, 23, 42, 0.2)');
+    expect(renderedTile().style.backdropFilter).toBe('blur(12px)');
+    expect(renderedTile().style.opacity).toBe('');
+    expect(screen.getByText('Tile content').style.opacity).toBe('');
+
+    rerender(<WidgetTile instance={makeWidget('clock', {
+      theme: 'midnight', frostedGlass: true, glassOpacity: 100,
+    })} />);
+    expect(renderedTile().style.backgroundColor).toBe('rgb(15, 23, 42)');
+    expect(renderedTile().style.backdropFilter).toBe('blur(12px)');
+
+    rerender(<WidgetTile instance={makeWidget('clock', {
+      theme: 'midnight', frostedGlass: false, glassOpacity: 20,
+    })} />);
+    expect(renderedTile().style.backgroundColor).toBe('rgb(15, 23, 42)');
     expect(renderedTile().style.backdropFilter).toBe('');
   });
 

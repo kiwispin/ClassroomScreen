@@ -113,6 +113,21 @@ describe('preset-io', () => {
                 glassOpacity: 45,
               },
             },
+            {
+              id: 'clock-w',
+              type: 'clock',
+              position: { x: 20, y: 40 },
+              size: { width: 280, height: 140 },
+              zIndex: 2,
+              config: {
+                format24: false,
+                showSeconds: true,
+                showDate: true,
+                analog: false,
+                frostedGlass: true,
+                glassOpacity: 45,
+              },
+            },
           ],
         },
       };
@@ -147,7 +162,9 @@ describe('preset-io', () => {
       expect(await restoredImg!.text()).toBe('IMG-DATA');
 
       // Timer audio id remapped
-      const tw = imported.state.widgets[0];
+      const tw = imported.state.widgets.find((widget) => widget.type === 'timer');
+      const cw = imported.state.widgets.find((widget) => widget.type === 'clock');
+      if (!tw || !cw) throw new Error('expected both Timer and Clock widgets');
       const tcfg = tw.config as { customSoundId?: string };
       const newSndId = tcfg.customSoundId!;
       expect(newSndId).not.toBe(sndId);
@@ -155,10 +172,18 @@ describe('preset-io', () => {
       expect(restoredSnd).toBeDefined();
       expect(await restoredSnd!.blob.text()).toBe('SND-DATA');
       expect(tw.config).toMatchObject({ frostedGlass: true, glassOpacity: 45 });
+      expect(cw.config).toMatchObject({
+        format24: false,
+        showSeconds: true,
+        analog: false,
+        frostedGlass: true,
+        glassOpacity: 45,
+      });
     });
 
-    it('keeps legacy Timer presets without glass settings unchanged', async () => {
+    it('keeps legacy Timer and Clock presets without glass settings unchanged', async () => {
       const legacyConfig = { theme: 'midnight', fullDurationMs: 300_000 };
+      const legacyClockConfig = { format24: true, showDate: true, analog: false };
       const preset: Preset = {
         id: 'legacy-timer-preset',
         name: 'Legacy timer',
@@ -173,13 +198,22 @@ describe('preset-io', () => {
             size: { width: 480, height: 200 },
             zIndex: 1,
             config: legacyConfig,
+          }, {
+            id: 'legacy-clock',
+            type: 'clock',
+            position: { x: 0, y: 220 },
+            size: { width: 280, height: 140 },
+            zIndex: 2,
+            config: legacyClockConfig,
           }],
         },
       };
 
       const bundle = await buildExportBundle([preset]);
       await importFromBundle(bundle);
-      expect(useAppStore.getState().presets[0].state.widgets[0].config).toEqual(legacyConfig);
+      const widgets = useAppStore.getState().presets[0].state.widgets;
+      expect(widgets.find((widget) => widget.type === 'timer')?.config).toEqual(legacyConfig);
+      expect(widgets.find((widget) => widget.type === 'clock')?.config).toEqual(legacyClockConfig);
     });
 
     it('rejects an invalid file', async () => {

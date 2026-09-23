@@ -2,18 +2,7 @@ import type { CSSProperties } from 'react';
 import type { WidgetInstance } from '../store/types';
 import { getWidgetComponent, getWidgetMeta } from '../widgets/registry';
 import { getTheme } from '../lib/themes';
-import {
-  DEFAULT_TIMER_GLASS_OPACITY,
-  MAX_TIMER_GLASS_OPACITY,
-  MIN_TIMER_GLASS_OPACITY,
-} from '../widgets/Timer';
-
-const withAlpha = (hex: string, opacity: number): string => {
-  const match = /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(hex);
-  if (!match) return hex;
-  const [, red, green, blue] = match;
-  return `rgba(${parseInt(red, 16)}, ${parseInt(green, 16)}, ${parseInt(blue, 16)}, ${opacity / 100})`;
-};
+import { normalizeGlassOpacity, withAlpha } from '../lib/widget-glass';
 
 export default function WidgetTile({ instance }: { instance: WidgetInstance }) {
   const Component = getWidgetComponent(instance.type);
@@ -34,14 +23,9 @@ export default function WidgetTile({ instance }: { instance: WidgetInstance }) {
     );
   }
 
-  const glassEnabled = instance.type === 'timer' && config.frostedGlass === true;
-  const configuredOpacity = Number.isFinite(config.glassOpacity)
-    ? config.glassOpacity!
-    : DEFAULT_TIMER_GLASS_OPACITY;
-  const glassOpacity = Math.max(
-    MIN_TIMER_GLASS_OPACITY,
-    Math.min(MAX_TIMER_GLASS_OPACITY, configuredOpacity),
-  );
+  const glassEnabled =
+    (instance.type === 'timer' || instance.type === 'clock') && config.frostedGlass === true;
+  const glassOpacity = normalizeGlassOpacity(config.glassOpacity);
   const tileBackground = glassEnabled ? withAlpha(theme.bg, glassOpacity) : theme.bg;
 
   const tileStyle: CSSProperties & Record<`--${string}`, string> = {

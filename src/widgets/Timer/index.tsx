@@ -5,13 +5,15 @@ import { useAppStore } from '../../store/store';
 import { playSfx, type SfxName } from '../../lib/audio';
 import { playCustomAudio } from '../../lib/audio-storage';
 import { stopBackgroundMusic } from '../../lib/background-music';
+export {
+  DEFAULT_GLASS_OPACITY as DEFAULT_TIMER_GLASS_OPACITY,
+  MAX_GLASS_OPACITY as MAX_TIMER_GLASS_OPACITY,
+  MIN_GLASS_OPACITY as MIN_TIMER_GLASS_OPACITY,
+} from '../../lib/widget-glass';
 import { dueWarningMinutes, formatMmss, remainingMs, type TimerState } from './logic';
 
 export type TimerSfx = SfxName | 'custom';
 export type TimerWarningSfx = SfxName | 'custom' | 'none';
-export const DEFAULT_TIMER_GLASS_OPACITY = 75;
-export const MIN_TIMER_GLASS_OPACITY = 20;
-export const MAX_TIMER_GLASS_OPACITY = 100;
 
 export type TimerConfig = {
   durationMs?: number;

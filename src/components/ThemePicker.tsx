@@ -2,30 +2,24 @@ import { Check, Palette } from 'lucide-react';
 import SettingsPopover from './SettingsPopover';
 import { useAppStore } from '../store/store';
 import { THEMES } from '../lib/themes';
-import { SettingsToggle } from './WidgetSettingsPanel';
 import {
-  DEFAULT_TIMER_GLASS_OPACITY,
-  MAX_TIMER_GLASS_OPACITY,
-  MIN_TIMER_GLASS_OPACITY,
-} from '../widgets/Timer';
+  DEFAULT_GLASS_OPACITY,
+  MAX_GLASS_OPACITY,
+  MIN_GLASS_OPACITY,
+  normalizeGlassOpacity,
+} from '../lib/widget-glass';
+import { SettingsToggle } from './WidgetSettingsPanel';
 
 type Props = {
   instanceId: string;
   currentTheme?: string;
-  timerGlass?: { enabled: boolean; opacity?: number };
+  glass?: { enabled: boolean; opacity?: number };
 };
 
-export default function ThemePicker({ instanceId, currentTheme, timerGlass }: Props) {
+export default function ThemePicker({ instanceId, currentTheme, glass }: Props) {
   const updateConfig = useAppStore((s) => s.updateWidgetConfig);
   const active = currentTheme ?? 'default';
-  const configuredOpacity = timerGlass?.opacity;
-  const glassOpacity = Math.max(
-    MIN_TIMER_GLASS_OPACITY,
-    Math.min(
-      MAX_TIMER_GLASS_OPACITY,
-      Number.isFinite(configuredOpacity) ? configuredOpacity! : DEFAULT_TIMER_GLASS_OPACITY,
-    ),
-  );
+  const glassOpacity = normalizeGlassOpacity(glass?.opacity ?? DEFAULT_GLASS_OPACITY);
 
   return (
     <SettingsPopover
@@ -96,11 +90,11 @@ export default function ThemePicker({ instanceId, currentTheme, timerGlass }: Pr
               );
             })}
           </div>
-          {timerGlass && (
+          {glass && (
             <div className="mt-1 border-t border-slate-200 pt-3">
               <SettingsToggle
                 label="Frosted glass"
-                checked={timerGlass.enabled}
+                checked={glass.enabled}
                 onChange={(enabled) => updateConfig(instanceId, { frostedGlass: enabled })}
               />
               <label className="mt-2 flex flex-col gap-1.5 text-xs font-medium text-slate-600">
@@ -111,11 +105,11 @@ export default function ThemePicker({ instanceId, currentTheme, timerGlass }: Pr
                 <input
                   type="range"
                   aria-label="Glass opacity"
-                  min={MIN_TIMER_GLASS_OPACITY}
-                  max={MAX_TIMER_GLASS_OPACITY}
+                  min={MIN_GLASS_OPACITY}
+                  max={MAX_GLASS_OPACITY}
                   step={5}
                   value={glassOpacity}
-                  disabled={!timerGlass.enabled}
+                  disabled={!glass.enabled}
                   onChange={(event) => updateConfig(instanceId, { glassOpacity: Number(event.target.value) })}
                   className="block h-2 w-full cursor-pointer accent-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                 />
