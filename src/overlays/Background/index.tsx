@@ -1,27 +1,50 @@
 import { useEffect, useState } from 'react';
 import type { Background } from '../../store/types';
+import { getCuratedBackground } from './catalog';
 import { getImage } from './idb';
 
+type LoadedImage = { key: string; src: string | null; failed: boolean };
+
 export default function BackgroundLayer({ bg }: { bg: Background }) {
-  const [imgUrl, setImgUrl] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState<LoadedImage | null>(null);
+  const sourceKey = bg.kind === 'image'
+    ? `upload:${bg.imageId}`
+    : bg.kind === 'preset-image'
+      ? `preset:${bg.assetId}`
+      : null;
 
   useEffect(() => {
-    let revoked = false;
-    let url: string | null = null;
-    if (bg.kind === 'image') {
-      getImage(bg.imageId).then((blob) => {
-        if (revoked || !blob) return;
-        url = URL.createObjectURL(blob);
-        setImgUrl(url);
-      });
-    } else {
-      setImgUrl(null);
+    if (!sourceKey) {
+      setLoaded(null);
+      return;
     }
+
+    let cancelled = false;
+    let objectUrl: string | null = null;
+    setLoaded({ key: sourceKey, src: null, failed: false });
+
+    if (bg.kind === 'preset-image') {
+      const photo = getCuratedBackground(bg.assetId);
+      setLoaded({ key: sourceKey, src: photo?.image ?? null, failed: !photo });
+    } else if (bg.kind === 'image') {
+      void getImage(bg.imageId).then((blob) => {
+        if (cancelled) return;
+        if (!blob) {
+          setLoaded({ key: sourceKey, src: null, failed: true });
+          return;
+        }
+        objectUrl = URL.createObjectURL(blob);
+        setLoaded({ key: sourceKey, src: objectUrl, failed: false });
+      }).catch(() => {
+        if (!cancelled) setLoaded({ key: sourceKey, src: null, failed: true });
+      });
+    }
+
     return () => {
-      revoked = true;
-      if (url) URL.revokeObjectURL(url);
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [bg]);
+  }, [sourceKey]);
 
   if (bg.kind === 'solid') {
     return <div className="absolute inset-0" style={{ backgroundColor: bg.color }} />;
@@ -29,15 +52,22 @@ export default function BackgroundLayer({ bg }: { bg: Background }) {
   if (bg.kind === 'gradient') {
     return <div className="absolute inset-0" style={{ backgroundImage: bg.css }} />;
   }
+
+  const src = loaded?.key === sourceKey && !loaded.failed ? loaded.src : null;
+  const fit = bg.fit;
   return (
-    <div
-      className="absolute inset-0 bg-slate-200"
-      style={{
-        backgroundImage: imgUrl ? `url(${imgUrl})` : undefined,
-        backgroundSize: bg.fit,
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    />
+    <div className="absolute inset-0 bg-slate-200" aria-label={src ? undefined : 'Background image unavailable'}>
+      {src && (
+        <img
+          key={sourceKey}
+          src={src}
+          alt=""
+          draggable={false}
+          className="absolute inset-0 h-full w-full"
+          style={{ objectFit: fit }}
+          onError={() => setLoaded({ key: sourceKey!, src: null, failed: true })}
+        />
+      )}
+    </div>
   );
 }

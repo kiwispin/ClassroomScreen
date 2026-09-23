@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import {
   AppState,
   DEFAULT_SCREEN,
+  SavedBackgroundUpload,
   SCHEMA_VERSION,
   WidgetType,
   ScheduleRule,
@@ -29,6 +30,8 @@ type Actions = {
   setBackgroundMusicVolume: (volume: number) => void;
   clearBackgroundMusic: () => void;
   setBackground: (bg: import('./types').Background) => void;
+  addBackgroundUpload: (upload: SavedBackgroundUpload) => void;
+  removeBackgroundUpload: (id: string) => void;
   toggleAnnotate: () => void;
   setAnnotateTool: (tool: 'pen' | 'eraser') => void;
   setAnnotateColor: (color: string) => void;
@@ -57,6 +60,7 @@ const initialState: AppState = {
   schemaVersion: SCHEMA_VERSION,
   current: DEFAULT_SCREEN,
   presets: [],
+  backgroundUploads: [],
   backgroundMusicId: undefined,
   backgroundMusicName: undefined,
   backgroundMusicVolume: 0.55,
@@ -163,6 +167,19 @@ export const useAppStore = create<AppState & Actions>()(
       setBackground: (bg) =>
         set((s) => ({
           current: { ...s.current, background: bg },
+        })),
+
+      addBackgroundUpload: (upload) =>
+        set((s) => ({
+          backgroundUploads: [
+            ...(s.backgroundUploads ?? []).filter((item) => item.id !== upload.id),
+            upload,
+          ],
+        })),
+
+      removeBackgroundUpload: (id) =>
+        set((s) => ({
+          backgroundUploads: (s.backgroundUploads ?? []).filter((item) => item.id !== id),
         })),
 
       toggleAnnotate: () => set((s) => ({ annotateOpen: !s.annotateOpen })),

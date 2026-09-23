@@ -1,4 +1,7 @@
-import SettingsPopover from '../../components/SettingsPopover';
+import WidgetSettingsPanel, {
+  SettingsSection,
+  SettingsToggle,
+} from '../../components/WidgetSettingsPanel';
 import SettingsTriggerButton from '../../components/SettingsTriggerButton';
 import { useAppStore } from '../../store/store';
 import type { WidgetSettingsProps } from '../Demo/meta';
@@ -15,70 +18,68 @@ export default function ClockSettings({ instance }: WidgetSettingsProps) {
   const cfg = instance.config as ClockConfig;
   const analog = cfg.analog ?? false;
 
-  const Toggle = ({
-    label,
-    value,
-    onChange,
-    disabled,
-  }: {
-    label: string;
-    value: boolean;
-    onChange: (v: boolean) => void;
-    disabled?: boolean;
-  }) => (
-    <label
-      className={
-        'flex items-center justify-between gap-3 ' +
-        (disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer')
-      }
-    >
-      <span>{label}</span>
-      <input
-        type="checkbox"
-        checked={value}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-    </label>
-  );
-
   return (
-    <SettingsPopover
-      trigger={(open) => (
-        <SettingsTriggerButton open={open} label="Clock settings" />
+    <WidgetSettingsPanel
+      title="Clock settings"
+      trigger={(toggle, open, panelId) => (
+        <SettingsTriggerButton
+          open={toggle}
+          label="Clock settings"
+          expanded={open}
+          controls={panelId}
+        />
       )}
     >
-      {() => (
-        <div className="flex flex-col gap-2 w-56">
-          <Toggle
-            label="Analog face"
-            value={analog}
-            onChange={(v) => updateConfig(instance.id, { analog: v })}
-          />
-          <div className="border-t border-slate-200 my-1" />
-          <Toggle
-            label="24-hour"
-            value={cfg.format24 ?? true}
-            onChange={(v) => updateConfig(instance.id, { format24: v })}
+      {() => <>
+        <SettingsSection title="Clock face">
+          <fieldset>
+            <legend className="sr-only">Clock face</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: false, label: 'Digital' },
+                { value: true, label: 'Analog' },
+              ].map((face) => (
+                <label key={face.label} className="cursor-pointer">
+                  <input
+                    type="radio"
+                    name={`clock-face-${instance.id}`}
+                    value={String(face.value)}
+                    checked={analog === face.value}
+                    onChange={() => updateConfig(instance.id, { analog: face.value })}
+                    className="peer sr-only"
+                  />
+                  <span className="flex min-h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 transition-colors peer-checked:border-indigo-400 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-indigo-500">
+                    {face.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </SettingsSection>
+
+        <SettingsSection title="Time">
+          <SettingsToggle
+            label="24-hour time"
+            checked={cfg.format24 ?? true}
+            onChange={(format24) => updateConfig(instance.id, { format24 })}
             disabled={analog}
           />
-          <Toggle
+          <SettingsToggle
             label="Show seconds"
-            value={cfg.showSeconds ?? false}
-            onChange={(v) => updateConfig(instance.id, { showSeconds: v })}
+            checked={cfg.showSeconds ?? false}
+            onChange={(showSeconds) => updateConfig(instance.id, { showSeconds })}
+            description={analog ? 'Adds a sweeping accent-coloured hand.' : undefined}
           />
-          <Toggle
+        </SettingsSection>
+
+        <SettingsSection title="Date">
+          <SettingsToggle
             label="Show date"
-            value={cfg.showDate ?? true}
-            onChange={(v) => updateConfig(instance.id, { showDate: v })}
+            checked={cfg.showDate ?? true}
+            onChange={(showDate) => updateConfig(instance.id, { showDate })}
           />
-          {analog && (
-            <p className="text-[11px] text-slate-500 mt-1">
-              Show seconds adds a sweeping accent-coloured hand.
-            </p>
-          )}
-        </div>
-      )}
-    </SettingsPopover>
+        </SettingsSection>
+      </>}
+    </WidgetSettingsPanel>
   );
 }

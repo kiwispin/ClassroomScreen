@@ -27,7 +27,15 @@ export type WidgetInstance = {
 export type Background =
   | { kind: 'solid'; color: string }
   | { kind: 'gradient'; css: string }
-  | { kind: 'image'; imageId: string; fit: 'cover' | 'contain' };
+  | { kind: 'image'; imageId: string; fit: 'cover' | 'contain' }
+  | { kind: 'preset-image'; assetId: string; fit: 'cover' | 'contain' };
+
+export type SavedBackgroundUpload = {
+  id: string;
+  name: string;
+  tags: string[];
+  addedAt: number;
+};
 
 export type ScreenState = {
   widgets: WidgetInstance[];
@@ -56,6 +64,7 @@ export type AppState = {
   schemaVersion: number;
   current: ScreenState;
   presets: Preset[];
+  backgroundUploads?: SavedBackgroundUpload[];
   backgroundMusicId?: string;
   backgroundMusicName?: string;
   backgroundMusicVolume: number;

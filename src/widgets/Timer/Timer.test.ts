@@ -1,5 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { render } from '@testing-library/react';
+import { createElement } from 'react';
+import { describe, it, expect, vi } from 'vitest';
+import type { WidgetInstance } from '../../store/types';
+import { playCustomAudio } from '../../lib/audio-storage';
+import Timer from './index';
 import { dueWarningMinutes, remainingMs, parseMmss, formatMmss } from './logic';
+
+vi.mock('../../lib/audio-storage', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../lib/audio-storage')>();
+  return { ...actual, playCustomAudio: vi.fn().mockResolvedValue(undefined) };
+});
 
 describe('dueWarningMinutes', () => {
   it('returns selected warnings as the timer crosses their thresholds', () => {
@@ -45,5 +55,35 @@ describe('remainingMs', () => {
   });
   it('floors at zero', () => {
     expect(remainingMs({ running: true, durationMs: 5_000, startedAt: 0 }, 999_999)).toBe(0);
+  });
+});
+
+describe('Timer warning playback', () => {
+  it('plays the shared custom sound when a selected warning threshold is reached', () => {
+    vi.stubGlobal('ResizeObserver', class {
+      observe() {}
+      disconnect() {}
+    });
+
+    const instance: WidgetInstance = {
+      id: 'timer-custom-warning-test',
+      type: 'timer',
+      position: { x: 0, y: 0 },
+      size: { width: 480, height: 200 },
+      zIndex: 1,
+      config: {
+        fullDurationMs: 5 * 60_000,
+        durationMs: 5 * 60_000,
+        running: true,
+        startedAt: Date.now() - 4 * 60_000,
+        warningMinutes: [1],
+        warningSfx: 'custom',
+        customSoundId: 'audio-123',
+      },
+    };
+
+    render(createElement(Timer, { instance }));
+
+    expect(playCustomAudio).toHaveBeenCalledWith('audio-123');
   });
 });

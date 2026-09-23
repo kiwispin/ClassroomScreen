@@ -69,6 +69,19 @@ describe('preset-io', () => {
   });
 
   describe('round-trip', () => {
+    it('preserves a bundled curated background asset id without embedding a file', async () => {
+      const preset: Preset = {
+        id: 'curated-preset', name: 'Nature', createdAt: 1, updatedAt: 1,
+        state: { background: { kind: 'preset-image', assetId: '32613724', fit: 'contain' }, widgets: [] },
+      };
+      const bundle = await buildExportBundle([preset]);
+      expect(bundle.images).toEqual([]);
+      expect(bundle.presets[0].state.background).toEqual(preset.state.background);
+
+      await importFromBundle(bundle);
+      expect(useAppStore.getState().presets[0].state.background).toEqual(preset.state.background);
+    });
+
     it('exports and imports a preset with embedded image + audio, remapping ids', async () => {
       // Seed IDB with one image and one audio
       const imgBlob = blob('IMG-DATA', 'image/png');
@@ -92,7 +105,13 @@ describe('preset-io', () => {
               position: { x: 10, y: 20 },
               size: { width: 480, height: 200 },
               zIndex: 1,
-              config: { customSoundId: sndId, sfx: 'custom', fullDurationMs: 600_000 },
+              config: {
+                customSoundId: sndId,
+                sfx: 'custom',
+                fullDurationMs: 600_000,
+                frostedGlass: true,
+                glassOpacity: 45,
+              },
             },
           ],
         },
@@ -135,6 +154,32 @@ describe('preset-io', () => {
       const restoredSnd = await getAudio(newSndId);
       expect(restoredSnd).toBeDefined();
       expect(await restoredSnd!.blob.text()).toBe('SND-DATA');
+      expect(tw.config).toMatchObject({ frostedGlass: true, glassOpacity: 45 });
+    });
+
+    it('keeps legacy Timer presets without glass settings unchanged', async () => {
+      const legacyConfig = { theme: 'midnight', fullDurationMs: 300_000 };
+      const preset: Preset = {
+        id: 'legacy-timer-preset',
+        name: 'Legacy timer',
+        createdAt: 1,
+        updatedAt: 1,
+        state: {
+          background: { kind: 'solid', color: '#fff' },
+          widgets: [{
+            id: 'legacy-timer',
+            type: 'timer',
+            position: { x: 0, y: 0 },
+            size: { width: 480, height: 200 },
+            zIndex: 1,
+            config: legacyConfig,
+          }],
+        },
+      };
+
+      const bundle = await buildExportBundle([preset]);
+      await importFromBundle(bundle);
+      expect(useAppStore.getState().presets[0].state.widgets[0].config).toEqual(legacyConfig);
     });
 
     it('rejects an invalid file', async () => {

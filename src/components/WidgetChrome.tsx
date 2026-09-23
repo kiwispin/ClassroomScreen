@@ -7,7 +7,12 @@ import ThemePicker from './ThemePicker';
 export default function WidgetChrome({ instance }: { instance: WidgetInstance }) {
   const removeWidget = useAppStore((s) => s.removeWidget);
   const meta = getWidgetMeta(instance.type);
-  const currentTheme = (instance.config as { theme?: string }).theme;
+  const config = instance.config as {
+    theme?: string;
+    frostedGlass?: boolean;
+    glassOpacity?: number;
+  };
+  const currentTheme = config.theme;
 
   let SettingsBtn: React.ReactNode = null;
   if (meta?.Settings) {
@@ -39,7 +44,14 @@ export default function WidgetChrome({ instance }: { instance: WidgetInstance })
         >
           <Trash2 className="w-4 h-4" strokeWidth={1.75} />
         </button>
-        <ThemePicker instanceId={instance.id} currentTheme={currentTheme} />
+        <ThemePicker
+          instanceId={instance.id}
+          currentTheme={currentTheme}
+          timerGlass={instance.type === 'timer' ? {
+            enabled: config.frostedGlass ?? false,
+            opacity: config.glassOpacity,
+          } : undefined}
+        />
         {SettingsBtn}
       </div>
     </div>

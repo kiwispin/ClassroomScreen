@@ -26,9 +26,10 @@ export const collectReferencedImageIds = (
 };
 
 export const pruneOrphanImages = async (
-  s: Pick<AppState, 'current' | 'presets'>,
+  s: Pick<AppState, 'current' | 'presets'> & Partial<Pick<AppState, 'backgroundUploads'>>,
 ): Promise<number> => {
   const referenced = collectReferencedImageIds(s);
+  for (const upload of s.backgroundUploads ?? []) referenced.add(upload.id);
   const allKeys = (await keys(imageStore)) as string[];
   let removed = 0;
   for (const key of allKeys) {

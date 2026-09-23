@@ -55,4 +55,16 @@ describe('pruneOrphanImages', () => {
     expect(await getImage(orphan)).toBeUndefined();
     expect(await getImage(used)).toBeDefined();
   });
+
+  it('keeps saved gallery uploads even when no screen currently uses them', async () => {
+    const saved = await putImage(new Blob(['saved']));
+    const orphan = await putImage(new Blob(['orphan']));
+    const s = { ...baseState(), backgroundUploads: [{ id: saved, name: 'Saved', tags: [], addedAt: 1 }] };
+
+    const removed = await pruneOrphanImages(s);
+    expect(removed).toBeGreaterThanOrEqual(1);
+    const { getImage } = await import('./idb');
+    expect(await getImage(saved)).toBeDefined();
+    expect(await getImage(orphan)).toBeUndefined();
+  });
 });

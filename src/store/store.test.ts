@@ -98,6 +98,14 @@ describe('app store', () => {
     });
   });
 
+  it('adds and removes locally saved background upload metadata', () => {
+    const upload = { id: 'upload-1', name: 'Forest.jpg', tags: ['forest'], addedAt: 1 };
+    useAppStore.getState().addBackgroundUpload(upload);
+    expect(useAppStore.getState().backgroundUploads).toEqual([upload]);
+    useAppStore.getState().removeBackgroundUpload(upload.id);
+    expect(useAppStore.getState().backgroundUploads).toEqual([]);
+  });
+
   it('toggleAnnotate flips the flag', () => {
     expect(useAppStore.getState().annotateOpen).toBe(false);
     useAppStore.getState().toggleAnnotate();

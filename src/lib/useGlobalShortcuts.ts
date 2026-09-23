@@ -13,6 +13,7 @@ export type ShortcutMap = Record<string, () => void>;
 export function useGlobalShortcuts(map: ShortcutMap) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (document.querySelector('[data-shortcuts-scope="local"]')) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (isTypingTarget(e.target)) return;
       const handler = map[e.key];

@@ -1,5 +1,9 @@
-import { useRef, useState } from 'react';
-import SettingsPopover from '../../components/SettingsPopover';
+import { useEffect, useRef, useState } from 'react';
+import { Music2, Play, Trash2, Upload, Volume2 } from 'lucide-react';
+import WidgetSettingsPanel, {
+  SettingsSection,
+  SettingsToggle,
+} from '../../components/WidgetSettingsPanel';
 import SettingsTriggerButton from '../../components/SettingsTriggerButton';
 import { useAppStore } from '../../store/store';
 import { SFX_NAMES, playSfx, type SfxName } from '../../lib/audio';
@@ -12,13 +16,6 @@ import type { WidgetSettingsProps } from '../Demo/meta';
 import { parseMmss, formatMmss } from './logic';
 import { TIMER_WARNING_OPTIONS } from './logic';
 import type { TimerConfig, TimerSfx, TimerWarningSfx } from '.';
-
-const WARNING_SOUNDS: Array<{ value: TimerWarningSfx; label: string }> = [
-  { value: 'none', label: 'Visual only' },
-  { value: 'chime', label: 'Chime' },
-  { value: 'gentle', label: 'Gentle' },
-  { value: 'ding', label: 'Ding' },
-];
 
 export default function TimerSettings({ instance }: WidgetSettingsProps) {
   const updateConfig = useAppStore((s) => s.updateWidgetConfig);
@@ -34,9 +31,23 @@ export default function TimerSettings({ instance }: WidgetSettingsProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  const warningSounds: Array<{ value: TimerWarningSfx; label: string }> = [
+    { value: 'none', label: 'Visual only' },
+    ...SFX_NAMES.map((name) => ({ value: name, label: name })),
+    ...(customId ? [{ value: 'custom' as const, label: customName ?? 'Custom sound' }] : []),
+  ];
+
+  useEffect(() => {
+    setDraft(formatMmss(fullMs));
+  }, [fullMs]);
+
   const commit = () => {
     const ms = parseMmss(draft);
     if (ms == null) {
+      setDraft(formatMmss(fullMs));
+      return;
+    }
+    if (ms === fullMs) {
       setDraft(formatMmss(fullMs));
       return;
     }
@@ -49,16 +60,29 @@ export default function TimerSettings({ instance }: WidgetSettingsProps) {
   };
 
   const pickSynth = (n: SfxName) => {
-    // Switching to a synthesized sound clears any custom file.
-    if (customId) {
-      deleteAudio(customId).catch(() => { /* ignore */ });
-    }
-    updateConfig(instance.id, {
-      sfx: n,
-      customSoundId: undefined,
-      customSoundName: undefined,
-    });
+    updateConfig(instance.id, { sfx: n });
     playSfx(n);
+  };
+
+  const pickCustomFinish = () => {
+    if (customId) updateConfig(instance.id, { sfx: 'custom' });
+  };
+
+  const previewSound = () => {
+    if (sfx === 'custom') {
+      if (customId) playCustomAudio(customId);
+    } else {
+      playSfx(sfx);
+    }
+  };
+
+  const previewWarningSound = () => {
+    if (warningSfx === 'none') return;
+    if (warningSfx === 'custom') {
+      if (customId) playCustomAudio(customId);
+    } else {
+      playSfx(warningSfx);
+    }
   };
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,10 +99,6 @@ export default function TimerSettings({ instance }: WidgetSettingsProps) {
 
     setUploading(true);
     try {
-      // Drop the previous custom file, if any.
-      if (customId) {
-        try { await deleteAudio(customId); } catch { /* ignore */ }
-      }
       const { id, name } = await putAudio(file);
       updateConfig(instance.id, {
         sfx: 'custom',
@@ -97,7 +117,8 @@ export default function TimerSettings({ instance }: WidgetSettingsProps) {
       try { await deleteAudio(customId); } catch { /* ignore */ }
     }
     updateConfig(instance.id, {
-      sfx: 'bell',
+      ...(sfx === 'custom' ? { sfx: 'bell' as const } : {}),
+      ...(warningSfx === 'custom' ? { warningSfx: 'chime' as const } : {}),
       customSoundId: undefined,
       customSoundName: undefined,
     });
@@ -111,147 +132,176 @@ export default function TimerSettings({ instance }: WidgetSettingsProps) {
   };
 
   return (
-    <SettingsPopover
-      trigger={(open) => (
-        <SettingsTriggerButton open={open} label="Timer settings" />
+    <WidgetSettingsPanel
+      title="Timer settings"
+      trigger={(toggle, open, panelId) => (
+        <SettingsTriggerButton
+          open={toggle}
+          label="Timer settings"
+          expanded={open}
+          controls={panelId}
+        />
       )}
     >
-      {() => (
-        <div className="flex flex-col gap-3 w-72">
+      {() => <>
+        <SettingsSection title="Duration">
           <label className="flex flex-col gap-1">
-            <span>Duration (MM:SS)</span>
+            <span className="font-medium text-slate-700">Time (MM:SS)</span>
             <input
               type="text"
+              inputMode="numeric"
+              aria-label="Duration (MM:SS)"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onBlur={commit}
               onKeyDown={(e) =>
                 e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()
               }
-              className="border border-slate-300 rounded px-2 py-1"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
+        </SettingsSection>
 
-          <div className="flex flex-col gap-1">
-            <span>Sound</span>
-            <div className="flex gap-1 flex-wrap">
-              {SFX_NAMES.map((n) => (
-                <button
-                  key={n}
-                  onClick={() => pickSynth(n)}
-                  className={
-                    'px-2 py-1 rounded text-xs ' +
-                    (sfx === n
-                      ? 'bg-slate-700 text-white'
-                      : 'bg-slate-200 text-slate-700')
-                  }
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
+        <SettingsSection title="Sound">
+          <div className="flex items-center gap-2">
+            <label className="min-w-0 flex-1">
+              <span className="sr-only">Timer sound</span>
+              <select
+                aria-label="Timer sound"
+                value={sfx}
+                onChange={(event) => {
+                  const value = event.target.value as TimerSfx;
+                  if (value === 'custom') pickCustomFinish();
+                  else pickSynth(value);
+                }}
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm capitalize text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              >
+                {SFX_NAMES.map((name) => <option key={name} value={name}>{name}</option>)}
+                {(sfx === 'custom' || customId) && (
+                  <option value="custom">{customName ?? 'Custom sound'}</option>
+                )}
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={previewSound}
+              disabled={sfx === 'custom' && !customId}
+              aria-label="Preview selected sound"
+              title="Preview selected sound"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+            >
+              <Volume2 className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
+        </SettingsSection>
 
-          <div className="flex flex-col gap-2 border-t border-slate-200 pt-2">
-            <div>
-              <span className="text-xs uppercase text-slate-500">Time warnings</span>
-              <p className="text-[11px] text-slate-500">Pulse the timer at selected checkpoints.</p>
-            </div>
-            <div className="grid grid-cols-3 gap-1">
+        <SettingsSection title="Time warnings">
+          <div className="grid grid-cols-3 gap-2">
               {TIMER_WARNING_OPTIONS.map((minutes) => (
                 <label
                   key={minutes}
-                  className="flex cursor-pointer items-center justify-center gap-1 rounded bg-slate-100 px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-200"
+                  className="flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 transition-colors hover:bg-slate-50 has-[:checked]:border-indigo-300 has-[:checked]:bg-indigo-50"
                 >
                   <input
                     type="checkbox"
                     checked={warningMinutes.includes(minutes)}
                     onChange={() => toggleWarning(minutes)}
-                    className="accent-indigo-500"
+                    className="h-4 w-4 accent-indigo-500"
                   />
                   {minutes} min
                 </label>
               ))}
-            </div>
-            <label className="flex items-center justify-between gap-2 text-xs text-slate-600">
-              <span>Warning sound</span>
+          </div>
+          <div className="flex items-end gap-2">
+            <label className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <span className="font-medium text-slate-700">Warning sound</span>
               <select
+                aria-label="Warning sound"
                 value={warningSfx}
                 onChange={(e) =>
                   updateConfig(instance.id, { warningSfx: e.target.value as TimerWarningSfx })
                 }
-                className="rounded border border-slate-300 bg-white px-2 py-1 text-xs"
+                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm capitalize text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
               >
-                {WARNING_SOUNDS.map((sound) => (
+                {warningSounds.map((sound) => (
                   <option key={sound.value} value={sound.value}>{sound.label}</option>
                 ))}
               </select>
             </label>
+            <button
+              type="button"
+              onClick={previewWarningSound}
+              disabled={warningSfx === 'none' || (warningSfx === 'custom' && !customId)}
+              aria-label="Preview warning sound"
+              title="Preview warning sound"
+              className="mb-px flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+            >
+              <Volume2 className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
+        </SettingsSection>
 
-          <div className="flex flex-col gap-1 border-t border-slate-200 pt-2">
-            <span className="text-xs uppercase text-slate-500">Custom sound</span>
-            {sfx === 'custom' && customId ? (
-              <div className="flex items-center gap-1">
-                <div
-                  className="flex-1 rounded bg-indigo-50 text-indigo-800 text-xs px-2 py-1 truncate"
-                  title={customName ?? 'Custom sound'}
-                >
-                  🎵 {customName ?? 'Custom sound'}
-                </div>
-                <button
-                  onClick={() => playCustomAudio(customId)}
-                  className="px-2 py-1 rounded bg-slate-200 text-slate-700 text-xs hover:bg-slate-300"
-                  title="Preview"
-                >
-                  ▶
-                </button>
-                <button
-                  onClick={removeCustom}
-                  className="px-2 py-1 rounded bg-rose-100 text-rose-700 text-xs hover:bg-rose-200"
-                  title="Remove custom sound"
-                >
-                  ✕
-                </button>
+        <SettingsSection title="Custom sound">
+          {customId ? (
+            <div className="flex items-center gap-2">
+              <div
+                className="flex min-w-0 flex-1 items-center gap-2 rounded-md bg-indigo-50 px-3 py-2 text-sm text-indigo-800"
+                title={customName ?? 'Custom sound'}
+              >
+                <Music2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="truncate">{customName ?? 'Custom sound'}</span>
               </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => fileInput.current?.click()}
-                  disabled={uploading}
-                  className="px-3 py-1 rounded bg-slate-700 text-white text-sm hover:bg-slate-800 disabled:opacity-50"
-                >
-                  {uploading ? 'Uploading…' : 'Upload sound (MP3/OGG/WAV)…'}
-                </button>
-                <p className="text-[11px] text-slate-500">
-                  Stored locally on this device.
-                </p>
-              </>
-            )}
-            {uploadError && (
-              <p className="text-[11px] text-rose-600">{uploadError}</p>
-            )}
-            <input
-              ref={fileInput}
-              type="file"
-              accept="audio/*,.mp3,.ogg,.oga,.wav,.m4a"
-              className="hidden"
-              onChange={onFile}
-            />
-          </div>
+              <button
+                type="button"
+                onClick={() => playCustomAudio(customId)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-700 transition-colors hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                aria-label="Preview custom sound"
+                title="Preview"
+              >
+                <Play className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={removeCustom}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-rose-50 text-rose-700 transition-colors hover:bg-rose-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
+                aria-label="Remove custom sound"
+                title="Remove custom sound"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                disabled={uploading}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-slate-700 px-3 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+              >
+                <Upload className="h-4 w-4" aria-hidden="true" />
+                {uploading ? 'Uploading…' : 'Upload sound'}
+              </button>
+              <p className="text-xs text-slate-500">MP3, OGG, WAV, or M4A. Stored on this device.</p>
+            </>
+          )}
+          {uploadError && <p className="text-xs text-rose-600" role="alert">{uploadError}</p>}
+          <input
+            ref={fileInput}
+            type="file"
+            accept="audio/*,.mp3,.ogg,.oga,.wav,.m4a"
+            className="hidden"
+            onChange={onFile}
+          />
+        </SettingsSection>
 
-          <label className="flex items-center justify-between gap-3 cursor-pointer">
-            <span>Auto-reset on zero</span>
-            <input
-              type="checkbox"
-              checked={cfg.autoReset ?? false}
-              onChange={(e) =>
-                updateConfig(instance.id, { autoReset: e.target.checked })
-              }
-            />
-          </label>
-        </div>
-      )}
-    </SettingsPopover>
+        <SettingsSection title="Timer behavior">
+          <SettingsToggle
+            label="Auto-reset on zero"
+            checked={cfg.autoReset ?? false}
+            onChange={(autoReset) => updateConfig(instance.id, { autoReset })}
+          />
+        </SettingsSection>
+      </>}
+    </WidgetSettingsPanel>
   );
 }

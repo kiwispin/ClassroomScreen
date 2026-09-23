@@ -8,7 +8,10 @@ import { stopBackgroundMusic } from '../../lib/background-music';
 import { dueWarningMinutes, formatMmss, remainingMs, type TimerState } from './logic';
 
 export type TimerSfx = SfxName | 'custom';
-export type TimerWarningSfx = SfxName | 'none';
+export type TimerWarningSfx = SfxName | 'custom' | 'none';
+export const DEFAULT_TIMER_GLASS_OPACITY = 75;
+export const MIN_TIMER_GLASS_OPACITY = 20;
+export const MAX_TIMER_GLASS_OPACITY = 100;
 
 export type TimerConfig = {
   durationMs?: number;
@@ -21,6 +24,8 @@ export type TimerConfig = {
   autoReset?: boolean;
   warningMinutes?: number[];
   warningSfx?: TimerWarningSfx;
+  frostedGlass?: boolean;
+  glassOpacity?: number;
 };
 
 const MAX_TOTAL_SECONDS = 99 * 60 + 59;
@@ -173,8 +178,12 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
       setWarningFlash(false);
       warningFlashTimeoutRef.current = null;
     }, 900);
-    if (warningSfx !== 'none') playSfx(warningSfx);
-  }, [running, remaining, warningMinutes, warningSfx]);
+    if (warningSfx === 'custom' && customSoundId) {
+      playCustomAudio(customSoundId);
+    } else if (warningSfx !== 'none' && warningSfx !== 'custom') {
+      playSfx(warningSfx);
+    }
+  }, [running, remaining, warningMinutes, warningSfx, customSoundId]);
 
   useEffect(() => {
     if (running && atZero && !firedRef.current) {
