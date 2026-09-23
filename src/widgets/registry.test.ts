@@ -18,6 +18,17 @@ describe('widget registry', () => {
     expect(typeof C).toBe('function');
   });
 
+  it('registers Timetable in the secondary widget list', () => {
+    expect(getWidgetMeta('timetable')).toMatchObject({
+      type: 'timetable',
+      label: 'Timetable',
+      secondary: true,
+      defaultConfig: { mode: 'timed', startTime: '08:00', showTitle: true },
+    });
+    expect(typeof getWidgetComponent('timetable')).toBe('function');
+    expect(allWidgets.some((widget) => widget.type === 'timetable')).toBe(true);
+  });
+
   it('returns undefined for an unknown widget type', () => {
     // @ts-expect-error - intentionally invalid for test
     expect(getWidgetMeta('does-not-exist')).toBeUndefined();

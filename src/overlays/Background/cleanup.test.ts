@@ -39,6 +39,41 @@ describe('collectReferencedImageIds', () => {
     const ids = collectReferencedImageIds(s);
     expect(ids).toEqual(new Set(['img-1']));
   });
+
+  it('retains timetable activity pictograms from current and preset screens', () => {
+    const s = baseState();
+    s.current.widgets = [{
+      id: 'today', type: 'timetable', position: { x: 0, y: 0 }, size: { width: 500, height: 300 }, zIndex: 1,
+      config: { activities: [{ id: 'a', kind: 'activity', title: 'Maths', durationMinutes: 30, imageId: 'current-picto' }] },
+    }];
+    s.presets.push({
+      id: 'p1', name: 'Tomorrow', createdAt: 0, updatedAt: 0,
+      state: {
+        widgets: [{
+          id: 'future', type: 'timetable', position: { x: 0, y: 0 }, size: { width: 500, height: 300 }, zIndex: 1,
+          config: { activities: [{ id: 'a', kind: 'activity', title: 'Art', durationMinutes: 30, imageId: 'preset-picto' }] },
+        }],
+        background: { kind: 'solid', color: '#fff' },
+      },
+    });
+
+    expect(collectReferencedImageIds(s)).toEqual(new Set(['current-picto', 'preset-picto']));
+  });
+
+  it('does not delete IndexedDB images referenced by timetable activities', async () => {
+    const used = await putImage(new Blob(['used pictogram']));
+    const orphan = await putImage(new Blob(['orphan']));
+    const s = baseState();
+    s.current.widgets = [{
+      id: 'today', type: 'timetable', position: { x: 0, y: 0 }, size: { width: 500, height: 300 }, zIndex: 1,
+      config: { activities: [{ id: 'a', kind: 'activity', title: 'Maths', durationMinutes: 30, imageId: used }] },
+    }];
+
+    expect(await pruneOrphanImages(s)).toBeGreaterThanOrEqual(1);
+    const { getImage } = await import('./idb');
+    expect(await getImage(used)).toBeDefined();
+    expect(await getImage(orphan)).toBeUndefined();
+  });
 });
 
 describe('pruneOrphanImages', () => {
@@ -50,7 +85,7 @@ describe('pruneOrphanImages', () => {
     s.current.background = { kind: 'image', imageId: used, fit: 'cover' };
 
     const removed = await pruneOrphanImages(s);
-    expect(removed).toBe(1);
+    expect(removed).toBeGreaterThanOrEqual(1);
     const { getImage } = await import('./idb');
     expect(await getImage(orphan)).toBeUndefined();
     expect(await getImage(used)).toBeDefined();

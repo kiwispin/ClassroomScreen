@@ -13,7 +13,8 @@ export type WidgetType =
   | 'video'
   | 'poll'
   | 'calendar'
-  | 'noisemeter';
+  | 'noisemeter'
+  | 'timetable';
 
 export type WidgetInstance = {
   id: string;

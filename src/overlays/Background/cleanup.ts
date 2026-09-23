@@ -13,6 +13,15 @@ const collectFromScreen = (scr: ScreenState, ids: Set<string>): void => {
         ids.add(c.imageId);
       }
     }
+    if (w.type === 'timetable') {
+      const c = w.config as { activities?: unknown };
+      const activities = Array.isArray(c.activities) ? c.activities : [];
+      for (const activity of activities) {
+        if (!activity || typeof activity !== 'object') continue;
+        const imageId = (activity as { imageId?: unknown }).imageId;
+        if (typeof imageId === 'string' && imageId) ids.add(imageId);
+      }
+    }
   }
 };
 

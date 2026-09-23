@@ -60,6 +60,15 @@ export const collectImageIds = (presets: Preset[]): Set<string> => {
           ids.add(c.imageId);
         }
       }
+      if (w.type === 'timetable') {
+        const c = w.config as { activities?: unknown };
+        const activities = Array.isArray(c.activities) ? c.activities : [];
+        for (const activity of activities) {
+          if (!activity || typeof activity !== 'object') continue;
+          const imageId = (activity as { imageId?: unknown }).imageId;
+          if (typeof imageId === 'string' && imageId) ids.add(imageId);
+        }
+      }
     }
   }
   return ids;
@@ -160,6 +169,19 @@ const remapScreenState = (
       if (c.customSoundId) {
         const replaced = audioIdMap.get(c.customSoundId);
         if (replaced) return { ...w, config: { ...w.config, customSoundId: replaced } };
+      }
+    }
+    if (w.type === 'timetable') {
+      const activities = (w.config as { activities?: unknown }).activities;
+      const remapActivity = (activity: unknown) => {
+        if (!activity || typeof activity !== 'object') return activity;
+        const record = activity as { imageId?: unknown };
+        if (typeof record.imageId !== 'string') return activity;
+        const replaced = imageIdMap.get(record.imageId);
+        return replaced ? { ...record, imageId: replaced } : activity;
+      };
+      if (Array.isArray(activities)) {
+        return { ...w, config: { ...w.config, activities: activities.map(remapActivity) } };
       }
     }
     return w;

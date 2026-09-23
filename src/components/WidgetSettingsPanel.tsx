@@ -56,6 +56,11 @@ export default function WidgetSettingsPanel({
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
+      const target = event.target;
+      const nestedDialog = target instanceof Element
+        ? target.closest('[data-escape-boundary="nested-dialog"]')
+        : null;
+      if (nestedDialog && panelRef.current?.contains(nestedDialog)) return;
       event.preventDefault();
       event.stopPropagation();
       close();

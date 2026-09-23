@@ -48,6 +48,21 @@ describe('preset-io', () => {
       ];
       expect(collectImageIds(presets)).toEqual(new Set(['bg-1', 'iw-1']));
     });
+
+    it('finds uploaded pictograms nested in timetable activities', () => {
+      const presets: Preset[] = [{
+        id: 'p1', name: 'P1', createdAt: 0, updatedAt: 0,
+        state: {
+          background: { kind: 'solid', color: '#fff' },
+          widgets: [{
+            id: 'timetable', type: 'timetable', position: { x: 0, y: 0 }, size: { width: 500, height: 300 }, zIndex: 1,
+            config: { activities: [{ id: 'a', kind: 'activity', title: 'Science', durationMinutes: 30, imageId: 'activity-picto' }] },
+          }],
+        },
+      }];
+
+      expect(collectImageIds(presets)).toEqual(new Set(['activity-picto']));
+    });
   });
 
   describe('collectAudioIds', () => {
@@ -179,6 +194,34 @@ describe('preset-io', () => {
         frostedGlass: true,
         glassOpacity: 45,
       });
+    });
+
+    it('embeds timetable pictograms and remaps nested activity image ids on import', async () => {
+      const imageId = await putImage(blob('TIMETABLE-PICTOGRAM', 'image/png'));
+      const preset: Preset = {
+        id: 'timetable-preset', name: 'Day plan', createdAt: 1, updatedAt: 1,
+        state: {
+          background: { kind: 'solid', color: '#fff' },
+          widgets: [{
+            id: 'timetable-widget', type: 'timetable', position: { x: 0, y: 0 }, size: { width: 600, height: 400 }, zIndex: 1,
+            config: { activities: [{ id: 'science', kind: 'activity', title: 'Science', durationMinutes: 40, imageId }] },
+          }],
+        },
+      };
+
+      const bundle = await buildExportBundle([preset]);
+      expect(bundle.images.map((image) => image.id)).toEqual([imageId]);
+      useAppStore.setState({ presets: [] });
+      await importFromBundle(bundle);
+
+      const timetable = useAppStore.getState().presets[0].state.widgets[0];
+      const activities = (timetable.config as { activities: { id: string; imageId: string }[] }).activities;
+      const importedActivity = activities.find((activity) => activity.id === 'science')!;
+      const importedId = importedActivity.imageId;
+      expect(importedId).not.toBe(imageId);
+      expect(importedActivity).toMatchObject({ id: 'science', kind: 'activity', title: 'Science', durationMinutes: 40 });
+      expect(await getImage(importedId)).toBeDefined();
+      expect(await (await getImage(importedId))!.text()).toBe('TIMETABLE-PICTOGRAM');
     });
 
     it('keeps legacy Timer and Clock presets without glass settings unchanged', async () => {

@@ -57,7 +57,7 @@ export default function WidgetCanvas({ focusMode = false }: Props) {
           position={{ x: w.position.x, y: w.position.y }}
           size={{ width: w.size.width, height: w.size.height }}
           bounds="parent"
-          minWidth={120}
+          minWidth={w.type === 'timetable' ? 280 : 120}
           minHeight={80}
           cancel="input,textarea,select,button,a,canvas"
           style={{ zIndex: w.zIndex }}
