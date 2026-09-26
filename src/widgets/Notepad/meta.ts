@@ -6,8 +6,8 @@ export const notepadMeta: WidgetMeta = {
   type: 'notepad',
   label: 'Notepad',
   Icon: StickyNote,
-  defaultSize: { width: 360, height: 240 },
-  defaultConfig: { text: '', fontSize: 16 },
+  defaultSize: { width: 480, height: 300 },
+  defaultConfig: { text: '', fontSize: 28, autoFit: false, fontFamily: 'Rounded' },
   Settings: NotepadSettings,
   iconColor: 'text-amber-500',
 };

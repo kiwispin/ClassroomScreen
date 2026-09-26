@@ -62,3 +62,7 @@ Replaced the large categorized/search dialog with a 320-pixel, four-column popup
 ### Stopwatch content sizing and placement
 
 Changed the stopwatch to a full-width, lighter time display with smaller hundredths and bottom-corner controls, using the user's reference image. Hour values still reduce their size to fit. New widgets now search for nearby free space, reserving toolbar space and avoiding identical placement on crowded screens. Browser review confirmed separate stopwatch positions and the new stopwatch layout.
+
+## Notes editor, 26 September 2026
+
+Compared against the user's Text-widget screenshot. Increased the default note canvas to 480 x 300, with 28px regular rounded-system typography and an italic placeholder. A compact editing toolbar provides whole-note font family, size, bold/italic/underline, alignment and colour. Controls appear while the editor has focus; the toolbar scrolls in narrow widgets. Existing plain-text content and auto-size settings remain compatible. This is not yet selection-based rich text: mixed formatting, links, lists and superscript are not implemented. The toolbar is inside the card rather than floating outside it. TypeScript/build passed, along with 28 relevant tests, including saved-text preservation and formatting changes. Inspected the editor in the local browser; not published.
