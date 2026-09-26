@@ -1,3 +1,4 @@
+import { nextWidgetPosition } from '../lib/widget-placement';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {
@@ -166,8 +167,10 @@ export const useAppStore = create<AppState & Actions & LayoutRuntime>()(
       }),
 
       addWidget: (type) => set((s) => {
+        const size = getDefaultSize(type);
+        const position = nextWidgetPosition(s.current.widgets, size, { width: typeof window === 'undefined' ? 1280 : window.innerWidth, height: typeof window === 'undefined' ? 720 : window.innerHeight });
         const widget: WidgetInstance = {
-          id: newId(), type, position: { x: 80, y: 80 }, size: getDefaultSize(type),
+          id: newId(), type, position, size,
           zIndex: nextZIndex(s.current.widgets), config: cloneScreen(getDefaultConfig(type)),
         };
         return recordLayout(s, { label: 'Add widget', changes: [{ id: widget.id, after: widget }] });

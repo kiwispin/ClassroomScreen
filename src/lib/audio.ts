@@ -116,3 +116,28 @@ export const playSfx = (name: SfxName): void => {
 
   setTimeout(() => ctx.close(), Math.max(0, (endTime - now) * 1000) + 100);
 };
+/** A short, synthesized dice rattle, started from the roll gesture. */
+export const playDiceRoll = (): void => {
+  const Ctor = getCtxCtor();
+  if (!Ctor) return;
+  const ctx = new Ctor();
+  const duration = 0.65;
+  const buffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * duration), ctx.sampleRate);
+  const samples = buffer.getChannelData(0);
+  const impacts = [0, 0.07, 0.15, 0.25, 0.39, 0.55];
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / ctx.sampleRate;
+    const envelope = impacts.reduce((sum, impact) => t >= impact && t < impact + 0.055 ? sum + Math.exp(-(t - impact) * 90) * (0.22 - impact * 0.18) : sum, 0);
+    samples[i] = (Math.random() * 2 - 1) * envelope;
+  }
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 1800;
+  source.connect(filter);
+  filter.connect(ctx.destination);
+  source.onended = () => { void ctx.close(); };
+  void ctx.resume();
+  source.start();
+};

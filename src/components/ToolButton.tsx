@@ -188,7 +188,7 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
 ) {
   const descriptionId = useId();
   const compact = variant === 'popover';
-  const iconSize = compact ? 'h-9 w-9' : 'h-8 w-8';
+  const iconSize = compact ? 'h-8 w-8' : 'h-8 w-8';
   const accent = active ? '#a5b4fc' : accentForColor(iconColor);
 
   return (
@@ -204,7 +204,7 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
       className={
         'relative shrink-0 flex flex-col items-center justify-center rounded-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-indigo-500 ' +
         (compact
-          ? 'h-[98px] w-full min-w-0 px-2 py-2 '
+          ? 'h-[82px] w-full min-w-0 px-1 py-2 '
           : 'h-[78px] min-w-[82px] px-2 py-2 ') +
         (active
           ? 'bg-indigo-50 text-indigo-600 ring-2 ring-slate-200'
@@ -222,7 +222,7 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
       </span>
       <span
         className={
-          'mt-1.5 max-w-full text-center text-[13px] font-medium leading-tight ' + (compact ? 'whitespace-normal ' : 'max-w-[82px] truncate whitespace-nowrap ') +
+          'mt-1.5 max-w-full text-center text-[13px] font-medium leading-tight ' + (compact ? 'truncate whitespace-nowrap !text-[11px] ' : 'max-w-[82px] truncate whitespace-nowrap ') +
           (active ? 'text-indigo-600' : 'text-slate-700')
         }
       >

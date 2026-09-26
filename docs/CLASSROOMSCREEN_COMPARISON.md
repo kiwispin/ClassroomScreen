@@ -34,3 +34,31 @@ Inspected the official live app's More menu and Edit widget bar dialog. The offi
 Added browser-persisted favourites and ordering, restore defaults, active-instance dots/counts, and a searchable library grouped by purpose. More stays fixed beside the horizontally scrolling favourites. Reordering uses labelled earlier/later buttons for keyboard and touch access. The library uses the shared responsive dialog rather than reproducing the official compact popover. Music is directly available in the scrolling toolbar. Hiding the bar removes its controls from keyboard navigation and leaves a visible Show widget bar button.
 
 Verified desktop (1280 x 720) and narrow (390 x 844) layouts, search, keyboard dismissal, hide/show, and favourite ordering across reload. Restored default favourites after review. All 191 tests passed with two workers; the initial unrestricted run had one background-picker timeout. TypeScript, production build and whitespace checks passed. This increment does not add drag ordering or claim full feature parity with the official app.
+
+## Timer and stopwatch controls, 26 September 2026
+
+Compared the live official timer's ring, digits, per-digit adjustments and play/reset controls. Its timer documentation (https://preview.classroomscreen.com/widgets/timer) describes three size-dependent layouts. This pass preserves our existing adaptive timer layouts rather than claiming complete parity; the official stopwatch was not inspected live.
+
+Fixed pause precision in both widgets to use the actual click time, refreshed the display clock on resume, kept the timer's last second visible until expiration, and based paused adjustments on the displayed remaining duration. Added distinct keyboard-accessible digit adjustments, visible focus outlines, reduced-motion-aware flashing and clearer reset-arrow icons. Stopwatch hour values use smaller type to fit the extra digits.
+
+Validation: 195 tests passed, including new exact pause/resume, paused adjustment, single finish-alert and stopwatch reset checks. TypeScript and production build passed. Browser checks covered the desktop timer/stopwatch, keyboard start/pause and entering/exiting fullscreen. Sound invocation was tested automatically; audible output was not verified. Changes remain local pending publication.
+
+## Dice overhaul, 26 September 2026
+
+Inspected the official live Dice widget and its settings catalogue, including selecting its arithmetic-symbol die. The reference offers one/two/three dice, positive and negative number dice, arithmetic symbols, colours, D12/D20, coin, letters, rock-paper-scissors, custom bounds, sound and themes. Our earlier catalogue lacked the arithmetic mode, used a misleading +x preview, and had uneven face styling and sizing.
+
+Rebuilt the local rolling view with consistently outlined faces, proper number/symbol tiles, vector hand illustrations, triangular three-dice arrangement and an adaptive grid up to eight dice. The catalogue now follows the reference's three-column arrangement and includes the missing arithmetic mode. Added six dice palettes, optional totals, polyhedral sets, an optional synthesized rattle, result announcements, and reduced-motion handling. Existing coin, colour, letter and custom-number modes remain. Configuration changes cancel a pending roll, and counts/bounds are normalized. Coin remains silver; coloured polyhedral dice use a tinted central face. Sound is off by default to preserve previous silent behaviour.
+
+Validation: 199 tests passed, TypeScript and production build passed. Browser review covered the 390-pixel catalogue, arithmetic selection, three/eight-dice layouts, colour and total options, and rolling. Sound invocation is covered automatically; audible output was not independently verified. Artwork is locally implemented SVG, not copied site assets. This is a local change pending publication, not a claim of exact visual or feature parity.
+
+### Polyhedral geometry correction
+
+Using the user's attached close-up references, replaced the incorrect subdivided D12/D20 artwork. D12 now has a pentagonal front and five surrounding pentagonal faces; D20 uses a triangular front with triangular adjacent faces. Removed blue wireframe outlines, adjusted the silhouette and grey face shading, and reduced numeral weight/size. Shared artwork updates both catalogue and rolled results. Visually inspected the catalogue and selected D20 in the browser; TypeScript and production build passed.
+
+### Compact More popup
+
+Replaced the large categorized/search dialog with a 320-pixel, four-column popup anchored above More, following the official popup inspected earlier. It shows non-favourite widgets and an Edit widget bar header; favourites are edited in their separate dialog. Popup is viewport-clamped, scrolls if necessary, closes on outside click/Escape/selection and restores keyboard focus appropriately. Checked at desktop and 390-pixel widths. Six toolbar behaviour tests, TypeScript and production build passed.
+
+### Stopwatch content sizing and placement
+
+Changed the stopwatch to a full-width, lighter time display with smaller hundredths and bottom-corner controls, using the user's reference image. Hour values still reduce their size to fit. New widgets now search for nearby free space, reserving toolbar space and avoiding identical placement on crowded screens. Browser review confirmed separate stopwatch positions and the new stopwatch layout.

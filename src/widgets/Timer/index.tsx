@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Play, Pause, Square, Plus, Minus } from 'lucide-react';
+import { Play, Pause, RotateCcw, Plus, Minus } from 'lucide-react';
 import type { WidgetInstance } from '../../store/types';
 import { useAppStore } from '../../store/store';
 import { playSfx, type SfxName } from '../../lib/audio';
@@ -58,19 +58,19 @@ const W_RESET_ICON = 'w-[clamp(11px,min(2.9cqw,8.5cqh),26px)] h-[clamp(11px,min(
 
 type DigitColumnProps = {
   value: number;
+  label: string;
   onAdjust: (delta: 1 | -1) => void;
   disabled?: boolean;
 };
 
-const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
+const DigitColumn = ({ value, label, onAdjust, disabled }: DigitColumnProps) => (
   <div className="flex flex-col items-center justify-center select-none">
     <button
       type="button"
       onClick={() => onAdjust(1)}
       disabled={disabled}
-      tabIndex={-1}
-      className={`${W_ADJUST_BUTTON} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
-      aria-label="Increase"
+      className={`${W_ADJUST_BUTTON} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500`}
+      aria-label={`Increase ${label}`} title={`Increase ${label}`}
     >
       <Plus className={`${W_PM} pointer-events-none`} strokeWidth={2.5} />
     </button>
@@ -79,9 +79,8 @@ const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
       type="button"
       onClick={() => onAdjust(-1)}
       disabled={disabled}
-      tabIndex={-1}
-      className={`${W_ADJUST_BUTTON} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
-      aria-label="Decrease"
+      className={`${W_ADJUST_BUTTON} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500`}
+      aria-label={`Decrease ${label}`} title={`Decrease ${label}`}
     >
       <Minus className={`${W_PM} pointer-events-none`} strokeWidth={2.5} />
     </button>
@@ -236,7 +235,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     return () => ro.disconnect();
   }, []);
 
-  const displayMs = running ? remaining : durationMs;
+  const displayMs = Math.ceil((running ? remaining : durationMs) / 1000) * 1000;
   const [mTens, mOnes, sTens, sOnes] = parseDigits(displayMs);
 
   // Two views of progress:
@@ -248,7 +247,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
   const adjustDigit = (idx: 0 | 1 | 2 | 3, delta: 1 | -1) => {
     if (running) return;
     warningFiredRef.current.clear();
-    const digits = parseDigits(fullMs);
+    const digits = parseDigits(displayMs);
     const maxes = [9, 9, 5, 9];
     const max = maxes[idx];
     // Wrap around: − from 0 → max, + from max → 0.
@@ -267,7 +266,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
   const adjustMinutes = (delta: 1 | -1) => {
     if (running) return;
     warningFiredRef.current.clear();
-    const totalSec = Math.floor(fullMs / 1000);
+    const totalSec = Math.floor(displayMs / 1000);
     const minutes = Math.floor(totalSec / 60);
     const seconds = totalSec % 60;
     const nextMin = Math.max(0, Math.min(99, minutes + delta));
@@ -282,6 +281,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
 
   const start = () => {
     if (running) return;
+    setNow(Date.now());
     if (remaining <= 0) {
       updateConfig(instance.id, { running: true, durationMs: fullMs, startedAt: Date.now() });
     } else {
@@ -296,7 +296,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     updateConfig(instance.id, {
       running: false,
       startedAt: null,
-      durationMs: remaining,
+      durationMs: remainingMs(state, Date.now()),
     });
   };
   const reset = () => {
@@ -310,9 +310,9 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
 
   const flash = !running && remaining === 0 && fullMs > 0;
   const timerVisual = flash
-    ? 'text-rose-500 animate-pulse'
+    ? 'text-rose-500 motion-safe:animate-pulse'
     : warningFlash
-      ? 'text-amber-500 animate-pulse'
+      ? 'text-amber-500 motion-safe:animate-pulse'
       : '';
 
   // === TALL layout (square-ish) ============================================
@@ -336,7 +336,8 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
       <div
         ref={containerRef}
         className="relative h-full w-full"
-        style={{ containerType: 'size' as const }}
+        role="group" aria-label="Timer"
+      style={{ containerType: 'size' as const }}
       >
         {/* Big progress ring centered (80% of the smaller dimension) */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -356,8 +357,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
             type="button"
             onClick={() => adjustMinutes(1)}
             disabled={running}
-            tabIndex={-1}
-            className={`${tallAdjustButton} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
+                  className={`${tallAdjustButton} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500`}
             aria-label="Add a minute"
           >
             <Plus className={`${tallPm} pointer-events-none`} strokeWidth={2.5} />
@@ -369,8 +369,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
             type="button"
             onClick={() => adjustMinutes(-1)}
             disabled={running}
-            tabIndex={-1}
-            className={`${tallAdjustButton} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
+                  className={`${tallAdjustButton} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500`}
             aria-label="Remove a minute"
           >
             <Minus className={`${tallPm} pointer-events-none`} strokeWidth={2.5} />
@@ -382,7 +381,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           <button
             onClick={start}
             disabled={fullMs === 0}
-            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${tallPrimaryBtn}`}
+            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 disabled:opacity-40 text-white flex items-center justify-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${tallPrimaryBtn}`}
             aria-label="Start"
             title="Start"
           >
@@ -391,7 +390,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         ) : (
           <button
             onClick={pause}
-            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-colors ${tallPrimaryBtn}`}
+            className={`absolute bottom-[4cqmin] left-[4cqmin] rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${tallPrimaryBtn}`}
             aria-label="Pause"
             title="Pause"
           >
@@ -402,11 +401,11 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         {/* Reset (bottom-right) */}
         <button
           onClick={reset}
-          className={`absolute bottom-[4cqmin] right-[4cqmin] rounded-full border border-slate-300 hover:bg-slate-400/20 text-current flex items-center justify-center transition-colors ${tallResetBtn}`}
+          className={`absolute bottom-[4cqmin] right-[4cqmin] rounded-full border border-slate-300 hover:bg-slate-400/20 text-current flex items-center justify-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${tallResetBtn}`}
           aria-label="Reset"
           title="Reset"
         >
-          <Square className={tallResetIcon} />
+          <RotateCcw className={tallResetIcon} />
         </button>
       </div>
     );
@@ -419,7 +418,8 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
       <div
         ref={containerRef}
         className="relative h-full w-full flex items-center p-3 gap-3"
-        style={{ containerType: 'size' as const }}
+        role="group" aria-label="Timer"
+      style={{ containerType: 'size' as const }}
       >
         <div className="aspect-square h-full max-h-full max-w-[35%] flex items-center justify-center shrink-0">
           <ProgressRing fraction={remainingFraction} />
@@ -431,11 +431,11 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
             timerVisual
           }
         >
-          <DigitColumn value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
-          <DigitColumn value={mOnes} onAdjust={(d) => adjustDigit(1, d)} disabled={running} />
+          <DigitColumn label="tens of minutes" value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
+          <DigitColumn label="minutes" value={mOnes} onAdjust={(d) => adjustDigit(1, d)} disabled={running} />
           <span className={`font-bold ${W_DIGIT} leading-none mx-0.5 mb-[2cqh]`}>:</span>
-          <DigitColumn value={sTens} onAdjust={(d) => adjustDigit(2, d)} disabled={running} />
-          <DigitColumn value={sOnes} onAdjust={(d) => adjustDigit(3, d)} disabled={running} />
+          <DigitColumn label="tens of seconds" value={sTens} onAdjust={(d) => adjustDigit(2, d)} disabled={running} />
+          <DigitColumn label="seconds" value={sOnes} onAdjust={(d) => adjustDigit(3, d)} disabled={running} />
         </div>
 
         <div className="flex flex-col items-center justify-center gap-1.5 shrink-0">
@@ -443,7 +443,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
             <button
               onClick={start}
               disabled={fullMs === 0}
-              className={`rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${W_BTN}`}
+              className={`rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 disabled:opacity-40 text-white flex items-center justify-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${W_BTN}`}
               aria-label="Start"
               title="Start"
             >
@@ -452,7 +452,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           ) : (
             <button
               onClick={pause}
-              className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-colors ${W_BTN}`}
+              className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${W_BTN}`}
               aria-label="Pause"
               title="Pause"
             >
@@ -461,11 +461,11 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           )}
           <button
             onClick={reset}
-            className={`rounded-full border border-slate-300 hover:bg-slate-400/20 text-current flex items-center justify-center transition-colors ${W_RESET_BTN}`}
+            className={`rounded-full border border-slate-300 hover:bg-slate-400/20 text-current flex items-center justify-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${W_RESET_BTN}`}
             aria-label="Reset"
             title="Reset"
           >
-            <Square className={W_RESET_ICON} />
+            <RotateCcw className={W_RESET_ICON} />
           </button>
         </div>
       </div>
@@ -478,6 +478,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
     <div
       ref={containerRef}
       className="relative h-full w-full flex items-center justify-between p-3 gap-3"
+      role="group" aria-label="Timer"
       style={{ containerType: 'size' as const }}
     >
       <div className="aspect-square h-[86%] max-h-full max-w-[32%] flex items-center justify-center shrink-0">
@@ -490,11 +491,11 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           timerVisual
         }
       >
-        <DigitColumn value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
-        <DigitColumn value={mOnes} onAdjust={(d) => adjustDigit(1, d)} disabled={running} />
+        <DigitColumn label="tens of minutes" value={mTens} onAdjust={(d) => adjustDigit(0, d)} disabled={running} />
+        <DigitColumn label="minutes" value={mOnes} onAdjust={(d) => adjustDigit(1, d)} disabled={running} />
         <span className={`font-bold ${W_DIGIT} leading-none mx-0.5 mb-[2cqh]`}>:</span>
-        <DigitColumn value={sTens} onAdjust={(d) => adjustDigit(2, d)} disabled={running} />
-        <DigitColumn value={sOnes} onAdjust={(d) => adjustDigit(3, d)} disabled={running} />
+        <DigitColumn label="tens of seconds" value={sTens} onAdjust={(d) => adjustDigit(2, d)} disabled={running} />
+        <DigitColumn label="seconds" value={sOnes} onAdjust={(d) => adjustDigit(3, d)} disabled={running} />
       </div>
 
       <div className="flex flex-col items-center justify-center gap-1.5 shrink-0">
@@ -502,7 +503,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           <button
             onClick={start}
             disabled={fullMs === 0}
-            className={`rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 disabled:opacity-40 text-white flex items-center justify-center transition-colors ${W_BTN}`}
+            className={`rounded-full bg-[var(--w-accent,#6366f1)] hover:opacity-90 disabled:opacity-40 text-white flex items-center justify-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${W_BTN}`}
             aria-label="Start"
             title="Start"
           >
@@ -511,7 +512,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         ) : (
           <button
             onClick={pause}
-            className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-colors ${W_BTN}`}
+            className={`rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${W_BTN}`}
             aria-label="Pause"
             title="Pause"
           >
@@ -520,11 +521,11 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         )}
         <button
           onClick={reset}
-          className={`rounded-full border border-slate-300 hover:bg-slate-400/20 text-current flex items-center justify-center transition-colors ${W_RESET_BTN}`}
+          className={`rounded-full border border-slate-300 hover:bg-slate-400/20 text-current flex items-center justify-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${W_RESET_BTN}`}
           aria-label="Reset"
           title="Reset"
         >
-          <Square className={W_RESET_ICON} />
+          <RotateCcw className={W_RESET_ICON} />
         </button>
       </div>
 

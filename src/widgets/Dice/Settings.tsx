@@ -1,10 +1,11 @@
-import { Check } from 'lucide-react';
+import { Check, Dices } from 'lucide-react';
 import type { ReactNode } from 'react';
-import WidgetSettingsPanel, { SettingsSection } from '../../components/WidgetSettingsPanel';
+import WidgetSettingsPanel, { SettingsSection, SettingsToggle } from '../../components/WidgetSettingsPanel';
 import SettingsTriggerButton from '../../components/SettingsTriggerButton';
 import { useAppStore } from '../../store/store';
 import type { WidgetSettingsProps } from '../Demo/meta';
-import type { DiceConfig } from '.';
+import { DICE_PALETTES, type DiceConfig } from '.';
+import { normalizeCount, normalizeBound } from './logic';
 import { CoinFace, ColorFace, DieFace, LetterFace, PolyDie, RpsFace } from '.';
 
 type DiceOption = {
@@ -75,16 +76,7 @@ const options: DiceOption[] = [
     config: { mode: 'range', min: -6, max: -1 },
     preview: <RangePreview>-6</RangePreview>,
   },
-  {
-    id: 'hundred',
-    label: '1 to 100',
-    config: { mode: 'range', min: 1, max: 100 },
-    preview: (
-      <div className="flex h-16 w-16 items-center justify-center rounded-md border-2 border-slate-950 bg-white text-3xl font-bold leading-none text-slate-950">
-        +x
-      </div>
-    ),
-  },
+  { id: 'operators', label: 'Maths symbols', config: { mode: 'operators' }, preview: <RangePreview><span className="grid grid-cols-2 gap-x-1 leading-none text-2xl"><span>+</span><span>×</span><span>÷</span><span>−</span></span></RangePreview> },
   {
     id: 'color',
     label: 'Color',
@@ -94,13 +86,13 @@ const options: DiceOption[] = [
   {
     id: 'd12',
     label: 'D12',
-    config: { mode: 'd12' },
+    config: { mode: 'd12', count: 1 },
     preview: <PolyDie value={12} sides={12} className="w-24" />,
   },
   {
     id: 'd20',
     label: 'D20',
-    config: { mode: 'd20' },
+    config: { mode: 'd20', count: 1 },
     preview: <PolyDie value={20} sides={20} className="w-24" />,
   },
   {
@@ -132,13 +124,23 @@ const options: DiceOption[] = [
       </div>
     ),
   },
+  {
+    id: 'hundred',
+    label: '1 to 100',
+    config: { mode: 'range', min: 1, max: 100 },
+    preview: (
+      <div className="flex h-16 w-16 items-center justify-center rounded-md border-2 border-slate-950 bg-white text-3xl font-bold leading-none text-slate-950">
+        100
+      </div>
+    ),
+  },
 ];
 
 export default function DiceSettings({ instance }: WidgetSettingsProps) {
   const updateConfig = useAppStore((s) => s.updateWidgetConfig);
   const cfg = instance.config as DiceConfig;
   const mode = cfg.mode ?? 'dice';
-  const count = cfg.count ?? 2;
+  const count = normalizeCount(cfg.count ?? 1);
   const min = cfg.min ?? 1;
   const max = cfg.max ?? 100;
 
@@ -152,6 +154,8 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
   return (
     <WidgetSettingsPanel
       title="Dice settings"
+      TitleIcon={Dices}
+      widthClassName="w-[min(30rem,calc(100vw-24px))]"
       trigger={(toggle, open, panelId) => (
         <SettingsTriggerButton open={toggle} label="Dice settings" expanded={open} controls={panelId} />
       )}
@@ -159,7 +163,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
       {() => (
         <>
         <SettingsSection title="Choose dice">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {options.map((option) => {
               const selected = isSelected(option);
               return (
@@ -168,7 +172,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                   type="button"
                   onClick={() => updateConfig(instance.id, option.config)}
                   className={
-                    'relative flex min-w-0 h-36 flex-col items-center justify-center rounded-lg border bg-white p-3 transition-colors ' +
+                    'relative flex min-w-0 h-32 flex-col items-center justify-center rounded-lg border bg-white p-1 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 ' +
                     (selected
                       ? 'border-2 border-indigo-500 ring-1 ring-indigo-100'
                       : 'border-slate-300 hover:border-slate-400')
@@ -182,7 +186,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                       <Check className="h-4 w-4" strokeWidth={3} />
                     </span>
                   )}
-                  <div className="flex h-24 items-center justify-center scale-90">{option.preview}</div>
+                  <div className="flex h-20 items-center justify-center scale-75">{option.preview}</div>
                   <span className="text-xs font-medium text-slate-700">{option.label}</span>
                 </button>
               );
@@ -191,7 +195,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
 
         </SettingsSection>
         <SettingsSection title="Custom dice">
-            {mode === 'dice' ? (
+            {(mode === 'dice' || mode === 'd12' || mode === 'd20') ? (
               <label className="flex items-center justify-between gap-3">
                 <span>Number of dice</span>
                 <input
@@ -201,8 +205,8 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                   value={count}
                   onChange={(e) =>
                     updateConfig(instance.id, {
-                      mode: 'dice',
-                      count: Number(e.target.value),
+                      mode,
+                      count: normalizeCount(Number(e.target.value)),
                     })
                   }
                   className="max-w-20 w-full min-w-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -218,7 +222,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                     onChange={(e) =>
                       updateConfig(instance.id, {
                         mode: 'range',
-                        min: Number(e.target.value),
+                        min: normalizeBound(Number(e.target.value), 1),
                       })
                     }
                     className="w-full min-w-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -232,7 +236,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                     onChange={(e) =>
                       updateConfig(instance.id, {
                         mode: 'range',
-                        max: Number(e.target.value),
+                        max: normalizeBound(Number(e.target.value), 100),
                       })
                     }
                     className="w-full min-w-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -270,6 +274,14 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                 Number
               </button>
             </div>
+        </SettingsSection>
+        <SettingsSection title="Dice colour">
+          <div className="flex flex-wrap gap-2">{DICE_PALETTES.map(palette => <button type="button" key={palette.name} aria-label={`${palette.name} dice`} aria-pressed={(cfg.diceColor ?? 'Classic') === palette.name} onClick={() => updateConfig(instance.id, { diceColor: palette.name })} className="flex h-11 w-11 items-center justify-center rounded-lg border-2 aria-pressed:border-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500" style={{ color: palette.ink, background: palette.fill, ['--die-fill' as string]: palette.fill }} title={palette.name}><DieFace value={5} className="h-8 w-8" /></button>)}</div>
+        </SettingsSection>
+        <SettingsSection title="Rolling">
+          <SettingsToggle label="Enable roll sound" checked={cfg.sound ?? false} onChange={(sound) => updateConfig(instance.id, { sound })} />
+          <SettingsToggle label="Show total" checked={cfg.showTotal ?? false} onChange={(showTotal) => updateConfig(instance.id, { showTotal })} />
+          <p className="text-xs text-slate-500">Totals appear for two or more six-, twelve- or twenty-sided dice.</p>
         </SettingsSection>
         </>
       )}

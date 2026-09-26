@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ChevronUp, LayoutGrid, Minimize2, MousePointer2, Pencil } from 'lucide-react';
 import { allWidgets } from '../widgets/registry';
 import { useAppStore } from '../store/store';
@@ -8,6 +8,7 @@ import AnnotateToolBar from '../overlays/Annotate/ToolBar';
 import PresetMenu from './PresetMenu';
 import ToolButton from './ToolButton';
 import WidgetLibrary from './WidgetLibrary';
+import MoreWidgets from './MoreWidgets';
 import BackgroundMusicControl from './BackgroundMusicControl';
 
 export default function Toolbar() {
@@ -21,6 +22,13 @@ export default function Toolbar() {
   const widgets = useAppStore((s) => s.current.widgets);
   const primary = resolveToolbarWidgets(preference, allWidgets);
   const [libraryOpen, setLibraryOpen] = useState(false);
+
+  const [editingBar, setEditingBar] = useState(false);
+  const moreButton = useRef<HTMLButtonElement>(null);
+  const closeLibrary = (restoreFocus = true) => {
+    setLibraryOpen(false);
+    if (restoreFocus) moreButton.current?.focus();
+  };
 
   if (hidden) return <button type="button" onClick={showToolbar} aria-label="Show widget bar" title="Show widget bar (B)" className="fixed bottom-3 left-1/2 z-[300] flex h-11 w-14 -translate-x-1/2 items-center justify-center rounded-xl border border-slate-200 bg-white/95 text-slate-600 shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500"><ChevronUp className="h-6 w-6" /></button>;
 
@@ -75,10 +83,11 @@ export default function Toolbar() {
             <PresetMenu />
           </>}
         </div>
-        {!annotateOpen && <div className="shrink-0 border-l border-slate-200 pl-1"><ToolButton Icon={LayoutGrid} label="more" title="More widgets and edit widget bar" expanded={libraryOpen} onClick={() => setLibraryOpen(true)} /></div>}
+        {!annotateOpen && <div className="shrink-0 border-l border-slate-200 pl-1"><ToolButton ref={moreButton} controls="more-widgets-popup" Icon={LayoutGrid} label="more" title="More widgets and edit widget bar" expanded={libraryOpen} onClick={() => setLibraryOpen(open => !open)} /></div>}
         <button type="button" onClick={hideToolbar} title="Hide bar (B)" aria-label="Hide bar" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500"><Minimize2 className="h-5 w-5" /></button>
       </div>
     </nav>
-    {libraryOpen && <WidgetLibrary onClose={() => setLibraryOpen(false)} />}
+    {libraryOpen && <MoreWidgets anchor={moreButton} onClose={closeLibrary} onEdit={() => { closeLibrary(); setEditingBar(true); }} />}
+    {editingBar && <WidgetLibrary onClose={() => { setEditingBar(false); moreButton.current?.focus(); }} />}
   </>;
 }

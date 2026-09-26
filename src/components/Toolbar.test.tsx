@@ -31,12 +31,12 @@ describe('Widget bar', () => {
     expect(clock).toHaveAccessibleDescription('1 on the current screen');
   });
 
-  it('searches all widgets and adds a non-favourite without changing favourites', async () => {
+  it('shows extra widgets in a compact popup and adds without changing favourites', async () => {
     const user = userEvent.setup();
     render(<Toolbar />);
     await user.click(screen.getByRole('button', { name: 'more' }));
     const dialog = screen.getByRole('dialog', { name: 'More widgets' });
-    await user.type(within(dialog).getByRole('searchbox'), 'calendar');
+    expect(within(dialog).queryByRole('searchbox')).not.toBeInTheDocument();
     expect(within(dialog).queryByRole('button', { name: 'clock' })).not.toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'calendar' }));
     expect(useAppStore.getState().current.widgets[0].type).toBe('calendar');
@@ -59,6 +59,19 @@ describe('Widget bar', () => {
     expect(useAppStore.getState().toolbarWidgets).toEqual(['timer', 'calendar']);
     await user.click(screen.getByRole('button', { name: 'Restore default bar' }));
     expect(useAppStore.getState().toolbarWidgets).toEqual(allWidgets.filter((w) => !w.secondary).map((w) => w.type));
+  });
+
+  it('dismisses the popup with Escape and outside clicks', async () => {
+    const user = userEvent.setup();
+    render(<Toolbar />);
+    const more = screen.getByRole('button', { name: 'more' });
+    await user.click(more);
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(more).toHaveFocus();
+    await user.click(more);
+    await user.click(screen.getByRole('button', { name: 'clock' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('keeps More available with no favourites and offers a visible show button when hidden', async () => {

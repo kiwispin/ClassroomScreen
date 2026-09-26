@@ -6,7 +6,8 @@ export type DiceMode =
   | 'd20'
   | 'coin'
   | 'letter'
-  | 'rps';
+  | 'rps'
+  | 'operators';
 
 export const COLORS = ['#c084fc', '#f87171', '#fbbf24', '#34d399', '#38bdf8', '#818cf8'];
 export const COIN_SIDES = ['heads', 'tails'];
@@ -36,3 +37,18 @@ export const pickOne = <T,>(items: readonly T[], rng: () => number = Math.random
   items[Math.min(items.length - 1, Math.floor(rng() * items.length))];
 
 export const DIE_GLYPHS = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+export const OPERATORS = ['+', '−', '×', '÷'] as const;
+export const COLOR_NAMES: Record<string, string> = { '#c084fc': 'Purple', '#f87171': 'Red', '#fbbf24': 'Yellow', '#34d399': 'Green', '#38bdf8': 'Blue', '#818cf8': 'Indigo' };
+export const normalizeCount = (count: number) => Number.isFinite(count) ? Math.max(1, Math.min(8, Math.trunc(count))) : 1;
+export const normalizeBound = (value: number, fallback: number) => Number.isFinite(value) ? Math.max(-9999, Math.min(9999, Math.trunc(value))) : fallback;
+export function rollValues(mode: DiceMode, count: number, min: number, max: number): Array<number | string> {
+  if (mode === 'dice') return rollDice(normalizeCount(count));
+  if (mode === 'd12' || mode === 'd20') return Array.from({ length: normalizeCount(count) }, () => rollSided(mode === 'd12' ? 12 : 20));
+  if (mode === 'color') return [pickOne(COLORS)];
+  if (mode === 'coin') return [pickOne(COIN_SIDES)];
+  if (mode === 'letter') return [pickOne(LETTERS)];
+  if (mode === 'rps') return [pickOne(RPS)];
+  if (mode === 'operators') return [pickOne(OPERATORS)];
+  return [pickInRange(normalizeBound(min, 1), normalizeBound(max, 100))];
+}
