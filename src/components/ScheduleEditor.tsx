@@ -1,18 +1,14 @@
-import { createPortal } from 'react-dom';
-import { Trash2, Plus, X } from 'lucide-react';
+import { Trash2, Plus } from 'lucide-react';
 import { useAppStore } from '../store/store';
-import type { ScheduleRule } from '../store/types';
+import ScreenDialog, { screenButton, screenInput } from './ScreenDialog';
+import { SettingsToggle } from './WidgetSettingsPanel';
 
-// Display order: Mon-first; map back to JS getDay() values (0=Sun..6=Sat).
-const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-const DAY_VALUES = [1, 2, 3, 4, 5, 6, 0];
+const DAYS = [
+  { label: 'Mon', value: 1 }, { label: 'Tue', value: 2 }, { label: 'Wed', value: 3 },
+  { label: 'Thu', value: 4 }, { label: 'Fri', value: 5 }, { label: 'Sat', value: 6 }, { label: 'Sun', value: 0 },
+];
 
-type Props = {
-  open: boolean;
-  onClose: () => void;
-};
-
-export default function ScheduleEditor({ open, onClose }: Props) {
+export default function ScheduleEditor({ open, onClose }: { open: boolean; onClose: () => void }) {
   const presets = useAppStore((s) => s.presets);
   const schedule = useAppStore((s) => s.schedule);
   const enabled = useAppStore((s) => s.scheduleEnabled);
@@ -20,166 +16,33 @@ export default function ScheduleEditor({ open, onClose }: Props) {
   const updateRule = useAppStore((s) => s.updateScheduleRule);
   const deleteRule = useAppStore((s) => s.deleteScheduleRule);
   const toggleEnabled = useAppStore((s) => s.toggleScheduleEnabled);
-
   if (!open) return null;
-
-  const onAdd = () => {
-    if (presets.length === 0) return;
-    addRule({
-      presetId: presets[0].id,
-      daysOfWeek: [1, 2, 3, 4, 5], // Mon–Fri
-      startTime: '09:00',
-    });
-  };
-
-  const toggleDay = (rule: ScheduleRule, day: number) => {
-    const has = rule.daysOfWeek.includes(day);
-    const days = has
-      ? rule.daysOfWeek.filter((d) => d !== day)
-      : [...rule.daysOfWeek, day];
-    updateRule(rule.id, { daysOfWeek: days });
-  };
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[400] bg-black/40 flex items-center justify-center p-4"
-      onMouseDown={onClose}
-    >
-      <div
-        className="bg-white rounded-2xl shadow-xl w-[560px] max-w-full max-h-[calc(100vh-32px)] flex flex-col overflow-hidden"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-800">Schedule</h2>
-          <button
-            onClick={onClose}
-            className="h-7 w-7 rounded hover:bg-slate-100 text-slate-500 flex items-center justify-center"
-            aria-label="Close"
-          >
-            <X className="w-4 h-4" strokeWidth={2} />
-          </button>
-        </div>
-
-        {/* Enable toggle */}
-        <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-          <div>
-            <div className="font-medium text-slate-800 text-sm">
-              Auto-load presets by time of day
-            </div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              Triggers at the start of the matching minute on selected days.
-            </div>
+  return <ScreenDialog title="Schedule" onClose={onClose}>
+    <SettingsToggle label="Auto-load saved screens" checked={enabled} onChange={toggleEnabled} />
+    <p className="mt-2 mb-5 text-xs text-slate-500">Keep this page open. Screens load at the selected time using this device’s local time, replacing the current screen.</p>
+    {!presets.length ? <p className="rounded-lg bg-slate-50 p-5 text-sm text-slate-500">Save a screen first, then choose when it should open.</p>
+      : !schedule.length ? <p className="rounded-lg bg-slate-50 p-5 text-sm text-slate-500">No scheduled screens yet. Add your first rule below.</p>
+      : <ul className="space-y-3">{schedule.map((rule, index) => {
+        const missing = !presets.some((p) => p.id === rule.presetId);
+        const clash = schedule.some((other) => other.id !== rule.id && other.startTime === rule.startTime && other.daysOfWeek.some((day) => rule.daysOfWeek.includes(day)));
+        return <li key={rule.id} className="rounded-lg border border-slate-200 p-3">
+          <div className="mb-3 flex items-center justify-between"><h3 className="text-xs font-semibold uppercase text-slate-500">Rule {index + 1}</h3><button className={screenButton + ' !px-2 text-rose-600'} aria-label={`Delete rule ${index + 1}`} onClick={() => deleteRule(rule.id)}><Trash2 className="h-4 w-4" /></button></div>
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-3">
+            <label className="text-sm font-medium">Time<input className={screenInput + ' mt-1'} aria-label={`Time for rule ${index + 1}`} type="time" value={rule.startTime} onChange={(e) => { if (/^\d{2}:\d{2}$/.test(e.target.value)) updateRule(rule.id, { startTime: e.target.value }); }} /></label>
+            <label className="min-w-0 text-sm font-medium">Screen<select className={screenInput + ' mt-1'} aria-label={`Screen for rule ${index + 1}`} value={rule.presetId} onChange={(e) => updateRule(rule.id, { presetId: e.target.value })}>
+              {missing && <option value={rule.presetId}>Choose a saved screen</option>}
+              {presets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select></label>
           </div>
-          <label className="inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              className="sr-only peer"
-              checked={enabled}
-              onChange={toggleEnabled}
-            />
-            <div className="relative w-11 h-6 bg-slate-200 peer-checked:bg-indigo-500 rounded-full transition-colors">
-              <div
-                className={
-                  'absolute top-0.5 left-0.5 h-5 w-5 bg-white rounded-full shadow transition-transform ' +
-                  (enabled ? 'translate-x-5' : '')
-                }
-              />
-            </div>
-          </label>
-        </div>
-
-        {/* Rules */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-5 py-3">
-          {presets.length === 0 ? (
-            <div className="text-sm text-slate-500 text-center py-8">
-              You need at least one saved preset before you can schedule it.
-            </div>
-          ) : schedule.length === 0 ? (
-            <div className="text-sm text-slate-500 text-center py-6">
-              No scheduled rules yet.
-            </div>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {schedule.map((rule) => (
-                <li
-                  key={rule.id}
-                  className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-slate-200 bg-slate-50/50"
-                >
-                  <input
-                    type="time"
-                    value={rule.startTime}
-                    onChange={(e) =>
-                      updateRule(rule.id, { startTime: e.target.value })
-                    }
-                    className="border border-slate-300 rounded px-2 py-1 text-sm font-mono"
-                  />
-
-                  <div className="flex items-center gap-0.5">
-                    {DAY_LABELS.map((label, i) => {
-                      const dayValue = DAY_VALUES[i];
-                      const on = rule.daysOfWeek.includes(dayValue);
-                      return (
-                        <button
-                          key={i}
-                          onClick={() => toggleDay(rule, dayValue)}
-                          className={
-                            'h-7 w-7 rounded-md text-xs font-semibold transition-colors ' +
-                            (on
-                              ? 'bg-indigo-500 text-white'
-                              : 'bg-white border border-slate-300 text-slate-600 hover:bg-slate-100')
-                          }
-                          title={
-                            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dayValue]
-                          }
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <select
-                    value={rule.presetId}
-                    onChange={(e) =>
-                      updateRule(rule.id, { presetId: e.target.value })
-                    }
-                    className="border border-slate-300 rounded px-2 py-1 text-sm flex-1 min-w-[120px]"
-                  >
-                    {presets.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-
-                  <button
-                    onClick={() => deleteRule(rule.id)}
-                    className="h-7 w-7 rounded hover:bg-rose-50 flex items-center justify-center text-rose-600"
-                    title="Delete rule"
-                    aria-label="Delete rule"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" strokeWidth={1.75} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* Footer: add */}
-        <div className="border-t border-slate-200 px-5 py-3 flex justify-end">
-          <button
-            onClick={onAdd}
-            disabled={presets.length === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-500 text-white text-sm hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <Plus className="w-4 h-4" strokeWidth={2} />
-            <span>Add rule</span>
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
-  );
+          <fieldset className="mt-3"><legend className="mb-2 text-sm font-medium">Repeat on</legend><div className="grid grid-cols-7 gap-1">{DAYS.map((day) => {
+            const selected = rule.daysOfWeek.includes(day.value);
+            return <button key={day.value} type="button" aria-label={`${day.label} for rule ${index + 1}`} aria-pressed={selected}
+              className={`min-h-10 rounded-md border text-xs font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 ${selected ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'}`}
+              onClick={() => updateRule(rule.id, { daysOfWeek: selected ? rule.daysOfWeek.filter((d) => d !== day.value) : [...rule.daysOfWeek, day.value] })}>{day.label}</button>;
+          })}</div></fieldset>
+          {(!rule.daysOfWeek.length || missing || clash) && <p role="status" className="mt-3 text-xs text-amber-700">{missing ? 'Choose a saved screen for this rule.' : !rule.daysOfWeek.length ? 'Choose at least one day for this rule to run.' : 'Another rule uses this time on a selected day. Choose a different time to avoid a conflict.'}</p>}
+        </li>;
+      })}</ul>}
+    <button className={screenButton + ' mt-4 w-full'} disabled={!presets.length} onClick={() => addRule({ presetId: presets[0].id, daysOfWeek: [1, 2, 3, 4, 5], startTime: '09:00' })}><Plus className="h-4 w-4" />Add rule</button>
+  </ScreenDialog>;
 }

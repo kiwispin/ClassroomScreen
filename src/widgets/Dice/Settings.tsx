@@ -1,6 +1,6 @@
-import { Check, Dices } from 'lucide-react';
+import { Check } from 'lucide-react';
 import type { ReactNode } from 'react';
-import SettingsPopover from '../../components/SettingsPopover';
+import WidgetSettingsPanel, { SettingsSection } from '../../components/WidgetSettingsPanel';
 import SettingsTriggerButton from '../../components/SettingsTriggerButton';
 import { useAppStore } from '../../store/store';
 import type { WidgetSettingsProps } from '../Demo/meta';
@@ -150,21 +150,16 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
   };
 
   return (
-    <SettingsPopover
-      title="Dice"
-      panelClassName="overflow-auto p-0"
-      trigger={(open) => (
-        <SettingsTriggerButton open={open} label="Dice settings" />
+    <WidgetSettingsPanel
+      title="Dice settings"
+      trigger={(toggle, open, panelId) => (
+        <SettingsTriggerButton open={toggle} label="Dice settings" expanded={open} controls={panelId} />
       )}
     >
       {() => (
-        <div className="w-[min(36rem,calc(100vw-32px))] bg-white p-6 text-slate-950">
-          <div className="mb-4 flex items-center gap-2 text-xl font-semibold">
-            <Dices className="h-8 w-8 text-slate-950" strokeWidth={2.2} />
-            <span>Choose dice</span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
+        <>
+        <SettingsSection title="Choose dice">
+          <div className="grid grid-cols-2 gap-2">
             {options.map((option) => {
               const selected = isSelected(option);
               return (
@@ -173,26 +168,29 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                   type="button"
                   onClick={() => updateConfig(instance.id, option.config)}
                   className={
-                    'relative flex h-36 flex-col items-center justify-center rounded-lg border bg-white p-3 transition-colors ' +
+                    'relative flex min-w-0 h-36 flex-col items-center justify-center rounded-lg border bg-white p-3 transition-colors ' +
                     (selected
                       ? 'border-2 border-indigo-500 ring-1 ring-indigo-100'
                       : 'border-slate-300 hover:border-slate-400')
                   }
+                  aria-label={option.label}
+                  aria-pressed={selected}
                   title={option.label}
                 >
                   {selected && (
-                    <span className="absolute top-3 left-1/2 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full bg-indigo-600 text-white">
+                    <span className="absolute z-10 top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-white">
                       <Check className="h-4 w-4" strokeWidth={3} />
                     </span>
                   )}
-                  <div className={selected ? 'mt-4' : ''}>{option.preview}</div>
+                  <div className="flex h-24 items-center justify-center scale-90">{option.preview}</div>
+                  <span className="text-xs font-medium text-slate-700">{option.label}</span>
                 </button>
               );
             })}
           </div>
 
-          <div className="mt-4 rounded-lg border border-slate-300 p-4">
-            <div className="mb-3 font-semibold">Custom dice</div>
+        </SettingsSection>
+        <SettingsSection title="Custom dice">
             {mode === 'dice' ? (
               <label className="flex items-center justify-between gap-3">
                 <span>Number of dice</span>
@@ -207,7 +205,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                       count: Number(e.target.value),
                     })
                   }
-                  className="w-20 rounded border border-slate-300 px-2 py-1"
+                  className="max-w-20 w-full min-w-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                 />
               </label>
             ) : mode === 'range' ? (
@@ -223,7 +221,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                         min: Number(e.target.value),
                       })
                     }
-                    className="rounded border border-slate-300 px-2 py-1"
+                    className="w-full min-w-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                   />
                 </label>
                 <label className="flex flex-col gap-1">
@@ -237,7 +235,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                         max: Number(e.target.value),
                       })
                     }
-                    className="rounded border border-slate-300 px-2 py-1"
+                    className="w-full min-w-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                   />
                 </label>
               </div>
@@ -251,7 +249,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                 type="button"
                 onClick={() => updateConfig(instance.id, { mode: 'dice' })}
                 className={
-                  'rounded px-3 py-1.5 text-sm font-medium ' +
+                  'min-h-10 rounded-md px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 ' +
                   (mode === 'dice'
                     ? 'bg-indigo-600 text-white'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
@@ -263,7 +261,7 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                 type="button"
                 onClick={() => updateConfig(instance.id, { mode: 'range' })}
                 className={
-                  'rounded px-3 py-1.5 text-sm font-medium ' +
+                  'min-h-10 rounded-md px-3 py-2 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 ' +
                   (mode === 'range'
                     ? 'bg-indigo-600 text-white'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
@@ -272,9 +270,9 @@ export default function DiceSettings({ instance }: WidgetSettingsProps) {
                 Number
               </button>
             </div>
-          </div>
-        </div>
+        </SettingsSection>
+        </>
       )}
-    </SettingsPopover>
+    </WidgetSettingsPanel>
   );
 }

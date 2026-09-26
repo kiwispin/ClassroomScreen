@@ -3,6 +3,9 @@ import { createPortal } from 'react-dom';
 type Row = { keys: string[]; description: string };
 
 const ROWS: Row[] = [
+  { keys: ['Ctrl/⌘', 'Z'], description: 'Undo widget layout (outside annotate mode)' },
+  { keys: ['Ctrl', 'Y'], description: 'Redo widget layout (or ⌘ Shift Z)' },
+  { keys: ['Shift', 'Click'], description: 'Select widgets for alignment' },
   { keys: ['A'], description: 'Toggle Annotate' },
   { keys: ['B'], description: 'Hide / show widget bar' },
   { keys: ['F'], description: 'Toggle fullscreen' },

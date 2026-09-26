@@ -1,12 +1,13 @@
-import { useMemo } from 'react';
-import { LayoutGrid, Minimize2, MousePointer2, Pencil } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronUp, LayoutGrid, Minimize2, MousePointer2, Pencil } from 'lucide-react';
 import { allWidgets } from '../widgets/registry';
 import { useAppStore } from '../store/store';
+import { resolveToolbarWidgets } from '../lib/toolbar-preferences';
 import BackgroundPicker from '../overlays/Background/Picker';
 import AnnotateToolBar from '../overlays/Annotate/ToolBar';
 import PresetMenu from './PresetMenu';
 import ToolButton from './ToolButton';
-import SettingsPopover from './SettingsPopover';
+import WidgetLibrary from './WidgetLibrary';
 import BackgroundMusicControl from './BackgroundMusicControl';
 
 export default function Toolbar() {
@@ -15,30 +16,25 @@ export default function Toolbar() {
   const toggleAnnotate = useAppStore((s) => s.toggleAnnotate);
   const hidden = useAppStore((s) => s.toolbarHidden ?? false);
   const hideToolbar = useAppStore((s) => s.hideToolbar);
+  const showToolbar = useAppStore((s) => s.showToolbar);
+  const preference = useAppStore((s) => s.toolbarWidgets);
+  const widgets = useAppStore((s) => s.current.widgets);
+  const primary = resolveToolbarWidgets(preference, allWidgets);
+  const [libraryOpen, setLibraryOpen] = useState(false);
 
-  const { primary, secondary } = useMemo(() => ({
-    primary: allWidgets.filter((w) => !w.secondary),
-    secondary: allWidgets.filter((w) => w.secondary),
-  }), []);
+  if (hidden) return <button type="button" onClick={showToolbar} aria-label="Show widget bar" title="Show widget bar (B)" className="fixed bottom-3 left-1/2 z-[300] flex h-11 w-14 -translate-x-1/2 items-center justify-center rounded-xl border border-slate-200 bg-white/95 text-slate-600 shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500"><ChevronUp className="h-6 w-6" /></button>;
 
-  return (
-    <div
-      className={
-        'fixed bottom-0 left-0 right-0 z-[300] flex justify-center pb-3 pointer-events-none transition-transform duration-200 ' +
-        (!hidden ? 'translate-y-0' : 'translate-y-[120%]')
-      }
-    >
-      <div
-        className="toolbar-scroll pointer-events-auto flex max-w-[calc(100vw-48px)] items-center gap-1 overflow-x-auto rounded-2xl border border-slate-200/90 bg-white/95 px-3 py-2 shadow-[0_18px_60px_-28px_rgba(15,23,42,0.46),0_2px_10px_-5px_rgba(15,23,42,0.25)] backdrop-blur-xl"
-      >
-        <div className="mr-2 flex h-[78px] w-14 shrink-0 flex-col items-center justify-center gap-1.5 border-r border-slate-200/90 pr-3">
+  return <>
+    <nav aria-label="Widget bar" className="pointer-events-none fixed bottom-0 left-0 right-0 z-[300] flex justify-center pb-3">
+      <div className="pointer-events-auto flex max-w-[calc(100vw-24px)] items-center gap-1 rounded-2xl border border-slate-200/90 bg-white/95 px-2 py-2 shadow-[0_18px_60px_-28px_rgba(15,23,42,0.46),0_2px_10px_-5px_rgba(15,23,42,0.25)] backdrop-blur-xl">
+        <div className="flex h-[88px] w-12 shrink-0 flex-col items-center justify-center gap-0 border-r border-slate-200/90 pr-1">
           <button
             type="button"
             title={annotateOpen ? 'Exit annotate (A)' : 'Toggle Annotate (A)'}
             aria-label={annotateOpen ? 'Exit annotate' : 'Toggle annotate'}
             onClick={toggleAnnotate}
             className={
-              'flex h-8 w-8 items-center justify-center rounded-lg transition-colors ' +
+              'flex h-11 w-11 items-center justify-center rounded-lg transition-colors ' +
               (annotateOpen
                 ? 'bg-indigo-50 text-indigo-600'
                 : 'text-slate-500 hover:bg-slate-50 hover:text-slate-950')
@@ -57,7 +53,7 @@ export default function Toolbar() {
               if (annotateOpen) toggleAnnotate();
             }}
             className={
-              'flex h-8 w-8 items-center justify-center rounded-lg transition-colors ' +
+              'flex h-11 w-11 items-center justify-center rounded-lg transition-colors ' +
               (!annotateOpen
                 ? 'bg-indigo-50 text-indigo-600'
                 : 'text-slate-500 hover:bg-slate-50 hover:text-slate-950')
@@ -69,79 +65,20 @@ export default function Toolbar() {
             </span>
           </button>
         </div>
-        {annotateOpen ? (
-          <AnnotateToolBar />
-        ) : (
-          <>
+
+        <div aria-label={annotateOpen ? 'Annotation tools' : 'Favourite widgets and screen tools'} tabIndex={0} className="flex min-w-0 items-center gap-1 overflow-x-auto overscroll-x-contain rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500" style={{ scrollbarWidth: 'thin' }}>
+          {annotateOpen ? <AnnotateToolBar /> : <>
             <BackgroundPicker />
-            {primary.map((w) => (
-              <ToolButton
-                key={w.type}
-                Icon={w.Icon}
-                label={w.label.toLowerCase()}
-                title={`Add ${w.label}`}
-                iconColor={w.iconColor}
-                onClick={() => addWidget(w.type)}
-              />
-            ))}
-            {secondary.length > 0 && (
-              <SettingsPopover
-                title="Edit widget bar"
-                arrow
-                panelClassName="overflow-visible p-0"
-                trigger={(open, popoverOpen) => (
-                  <ToolButton
-                    Icon={LayoutGrid}
-                    label="more"
-                    title={`More widgets (${secondary.length})`}
-                    active={popoverOpen}
-                    onClick={open}
-                  />
-                )}
-              >
-                {(close) => (
-                  <div className="grid w-[min(30rem,calc(100vw-32px))] grid-cols-3 gap-x-3 gap-y-1 px-5 py-5 sm:grid-cols-4">
-                    {secondary.map((w) => (
-                      <ToolButton
-                        key={w.type}
-                        Icon={w.Icon}
-                        label={w.label.toLowerCase()}
-                        title={`Add ${w.label}`}
-                        iconColor={w.iconColor}
-                        variant="popover"
-                        onClick={() => {
-                          addWidget(w.type);
-                          close();
-                        }}
-                      />
-                    ))}
-                    <BackgroundMusicControl variant="popover" />
-                  </div>
-                )}
-              </SettingsPopover>
-            )}
-            <div className="mx-1 h-12 w-px shrink-0 bg-slate-200/90" />
+            {primary.map((w) => <ToolButton key={w.type} Icon={w.Icon} label={w.label.toLowerCase()} title={`Add ${w.label}`} iconColor={w.iconColor} instanceCount={widgets.filter((instance) => instance.type === w.type).length} onClick={() => addWidget(w.type)} />)}
+            <span className="mx-1 h-12 w-px shrink-0 bg-slate-200" />
+            <BackgroundMusicControl />
             <PresetMenu />
-            <div className="mx-1 h-12 w-px shrink-0 bg-slate-200/90" />
-            <button
-              type="button"
-              onClick={hideToolbar}
-              title="Hide bar (B)"
-              aria-label="Hide bar"
-              className="group flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-xl bg-slate-100/80 text-slate-600 transition-colors hover:bg-slate-200/80 hover:text-slate-950"
-            >
-              <Minimize2
-                className="h-7 w-7"
-                strokeWidth={2.3}
-                style={{
-                  stroke: 'url(#grad-slate)',
-                  filter: 'drop-shadow(0 1px 0 rgba(15,23,42,0.08))',
-                }}
-              />
-            </button>
-          </>
-        )}
+          </>}
+        </div>
+        {!annotateOpen && <div className="shrink-0 border-l border-slate-200 pl-1"><ToolButton Icon={LayoutGrid} label="more" title="More widgets and edit widget bar" expanded={libraryOpen} onClick={() => setLibraryOpen(true)} /></div>}
+        <button type="button" onClick={hideToolbar} title="Hide bar (B)" aria-label="Hide bar" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500"><Minimize2 className="h-5 w-5" /></button>
       </div>
-    </div>
-  );
+    </nav>
+    {libraryOpen && <WidgetLibrary onClose={() => setLibraryOpen(false)} />}
+  </>;
 }

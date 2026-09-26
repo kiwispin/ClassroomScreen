@@ -84,7 +84,7 @@ export default function Stopwatch({ instance }: { instance: WidgetInstance }) {
         )}
         <button
           onClick={reset}
-          className={`rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors ${RESET_BTN_SIZE}`}
+          className={`rounded-full border border-slate-300 hover:bg-slate-400/20 text-current flex items-center justify-center transition-colors ${RESET_BTN_SIZE}`}
           aria-label="Reset"
           title="Reset"
         >

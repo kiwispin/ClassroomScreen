@@ -113,7 +113,7 @@ export default function NamePicker({ instance }: { instance: WidgetInstance }) {
         {removePicked && picked.length > 0 && (
           <button
             onClick={resetPicked}
-            className="flex items-center gap-1 rounded-full border border-slate-300 hover:bg-slate-100 text-slate-600 transition-colors px-3 py-1.5 text-xs"
+            className="flex items-center gap-1 rounded-full border border-slate-300 hover:bg-slate-400/20 text-current transition-colors px-3 py-1.5 text-xs"
             title="Reset picked list"
           >
             <RotateCcw className="w-3.5 h-3.5" strokeWidth={2} />

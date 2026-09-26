@@ -69,7 +69,7 @@ const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
       onClick={() => onAdjust(1)}
       disabled={disabled}
       tabIndex={-1}
-      className={`${W_ADJUST_BUTTON} rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
+      className={`${W_ADJUST_BUTTON} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
       aria-label="Increase"
     >
       <Plus className={`${W_PM} pointer-events-none`} strokeWidth={2.5} />
@@ -80,7 +80,7 @@ const DigitColumn = ({ value, onAdjust, disabled }: DigitColumnProps) => (
       onClick={() => onAdjust(-1)}
       disabled={disabled}
       tabIndex={-1}
-      className={`${W_ADJUST_BUTTON} rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
+      className={`${W_ADJUST_BUTTON} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
       aria-label="Decrease"
     >
       <Minus className={`${W_PM} pointer-events-none`} strokeWidth={2.5} />
@@ -357,7 +357,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
             onClick={() => adjustMinutes(1)}
             disabled={running}
             tabIndex={-1}
-            className={`${tallAdjustButton} rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
+            className={`${tallAdjustButton} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
             aria-label="Add a minute"
           >
             <Plus className={`${tallPm} pointer-events-none`} strokeWidth={2.5} />
@@ -370,7 +370,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
             onClick={() => adjustMinutes(-1)}
             disabled={running}
             tabIndex={-1}
-            className={`${tallAdjustButton} rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100/60 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
+            className={`${tallAdjustButton} rounded-md text-current opacity-60 hover:opacity-100 hover:bg-slate-400/20 disabled:opacity-0 disabled:pointer-events-none transition-colors`}
             aria-label="Remove a minute"
           >
             <Minus className={`${tallPm} pointer-events-none`} strokeWidth={2.5} />
@@ -402,7 +402,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         {/* Reset (bottom-right) */}
         <button
           onClick={reset}
-          className={`absolute bottom-[4cqmin] right-[4cqmin] rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors ${tallResetBtn}`}
+          className={`absolute bottom-[4cqmin] right-[4cqmin] rounded-full border border-slate-300 hover:bg-slate-400/20 text-current flex items-center justify-center transition-colors ${tallResetBtn}`}
           aria-label="Reset"
           title="Reset"
         >
@@ -461,7 +461,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
           )}
           <button
             onClick={reset}
-            className={`rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors ${W_RESET_BTN}`}
+            className={`rounded-full border border-slate-300 hover:bg-slate-400/20 text-current flex items-center justify-center transition-colors ${W_RESET_BTN}`}
             aria-label="Reset"
             title="Reset"
           >
@@ -520,7 +520,7 @@ export default function Timer({ instance }: { instance: WidgetInstance }) {
         )}
         <button
           onClick={reset}
-          className={`rounded-full border border-slate-300 hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors ${W_RESET_BTN}`}
+          className={`rounded-full border border-slate-300 hover:bg-slate-400/20 text-current flex items-center justify-center transition-colors ${W_RESET_BTN}`}
           aria-label="Reset"
           title="Reset"
         >

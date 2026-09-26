@@ -8,8 +8,11 @@ import {
   WidgetType,
   ScheduleRule,
 } from './types';
+import { alignWidgets, applyLayoutEdit, HISTORY_LIMIT, type Alignment, type LayoutEdit } from '../lib/layout-history';
+import type { WidgetInstance } from './types';
 import { newId } from '../lib/uuid';
-import { getWidgetMeta } from '../widgets/registry';
+import { resolveToolbarWidgets } from '../lib/toolbar-preferences';
+import { allWidgets, getWidgetMeta } from '../widgets/registry';
 
 const FALLBACK_SIZE = { width: 240, height: 160 };
 
@@ -19,7 +22,23 @@ const getDefaultSize = (type: WidgetType): { width: number; height: number } =>
 const getDefaultConfig = (type: WidgetType): Record<string, unknown> =>
   getWidgetMeta(type)?.defaultConfig ?? {};
 
+type LayoutRuntime = {
+  layoutPast: LayoutEdit[];
+  layoutFuture: LayoutEdit[];
+  selectedWidgetIds: string[];
+};
+
 type Actions = {
+  setToolbarWidgets: (types: WidgetType[]) => void;
+  commitWidgetLayout: (id: string, position: WidgetInstance['position'], size?: WidgetInstance['size']) => void;
+  toggleWidgetLock: (id: string) => void;
+  duplicateWidget: (id: string, bounds?: { width: number; height: number }) => void;
+  selectWidget: (id: string, additive?: boolean) => void;
+  clearWidgetSelection: () => void;
+  alignSelectedWidgets: (alignment: Alignment) => void;
+  toggleSnapToGrid: () => void;
+  undoLayout: () => void;
+  redoLayout: () => void;
   addWidget: (type: WidgetType) => void;
   removeWidget: (id: string) => void;
   updateWidgetPosition: (id: string, x: number, y: number) => void;
@@ -48,6 +67,8 @@ type Actions = {
   updateActivePreset: () => void;
   renamePreset: (id: string, name: string) => void;
   deletePreset: (id: string) => void;
+  duplicatePreset: (id: string) => void;
+  movePreset: (id: string, direction: -1 | 1) => void;
   addScheduleRule: (rule: Omit<ScheduleRule, 'id'>) => void;
   updateScheduleRule: (id: string, patch: Partial<Omit<ScheduleRule, 'id'>>) => void;
   deleteScheduleRule: (id: string) => void;
@@ -81,43 +102,89 @@ const initialState: AppState = {
 const nextZIndex = (widgets: { zIndex: number }[]): number =>
   widgets.length === 0 ? 1 : Math.max(...widgets.map((w) => w.zIndex)) + 1;
 
-export const useAppStore = create<AppState & Actions>()(
+function recordLayout(s: AppState & LayoutRuntime, edit: LayoutEdit) {
+  // History stores snapshots so later content edits cannot mutate deleted copies.
+  const snapshot = cloneScreen(edit);
+  return {
+    current: { ...s.current, widgets: applyLayoutEdit(s.current.widgets, snapshot, false) },
+    layoutPast: [...s.layoutPast, snapshot].slice(-HISTORY_LIMIT), layoutFuture: [],
+  };
+}
+
+export const useAppStore = create<AppState & Actions & LayoutRuntime>()(
   persist(
     (set) => ({
       ...initialState,
+      setToolbarWidgets: (types) => set({ toolbarWidgets: resolveToolbarWidgets(types, allWidgets).map((w) => w.type) }),
+      layoutPast: [], layoutFuture: [], selectedWidgetIds: [],
 
-      addWidget: (type) =>
-        set((s) => ({
-          current: {
-            ...s.current,
-            widgets: [
-              ...s.current.widgets,
-              {
-                id: newId(),
-                type,
-                position: { x: 80, y: 80 },
-                size: getDefaultSize(type),
-                zIndex: nextZIndex(s.current.widgets),
-                config: getDefaultConfig(type),
-              },
-            ],
-          },
-        })),
+      selectWidget: (id, additive = false) => set((s) => ({ selectedWidgetIds: additive
+        ? s.selectedWidgetIds.includes(id) ? s.selectedWidgetIds.filter((item) => item !== id) : [...s.selectedWidgetIds, id]
+        : [id] })),
+      clearWidgetSelection: () => set({ selectedWidgetIds: [] }),
+      toggleSnapToGrid: () => set((s) => ({ snapToGrid: !s.snapToGrid })),
+      commitWidgetLayout: (id, position, size) => set((s) => {
+        const before = s.current.widgets.find((w) => w.id === id);
+        if (!before || before.locked) return {};
+        const after = { ...before, position, size: size ?? before.size };
+        if (before.position.x === after.position.x && before.position.y === after.position.y && before.size.width === after.size.width && before.size.height === after.size.height) return {};
+        return recordLayout(s, { label: size ? 'Resize widget' : 'Move widget', changes: [{ id, before, after }] });
+      }),
+      toggleWidgetLock: (id) => set((s) => {
+        const before = s.current.widgets.find((w) => w.id === id);
+        if (!before) return {};
+        return recordLayout(s, { label: before.locked ? 'Unlock widget' : 'Lock widget', changes: [{ id, before, after: { ...before, locked: !before.locked } }] });
+      }),
+      duplicateWidget: (id, bounds) => set((s) => {
+        const original = s.current.widgets.find((w) => w.id === id);
+        if (!original) return {};
+        const copy = cloneScreen(original);
+        copy.id = newId(); copy.locked = false; copy.zIndex = nextZIndex(s.current.widgets);
+        copy.position = {
+          x: Math.max(0, Math.min(original.position.x + 24, (bounds?.width ?? Infinity) - copy.size.width)),
+          y: Math.max(40, Math.min(original.position.y + 24, (bounds?.height ?? Infinity) - copy.size.height)),
+        };
+        // Copy settings without starting a second countdown or stopwatch.
+        if (copy.type === 'timer') copy.config = { ...copy.config, running: false, startedAt: null, durationMs: copy.config.fullDurationMs ?? 300000 };
+        if (copy.type === 'stopwatch') copy.config = { ...copy.config, running: false, startedAt: null, accumulatedMs: 0 };
+        return { ...recordLayout(s, { label: 'Duplicate widget', changes: [{ id: copy.id, after: copy }] }), selectedWidgetIds: [copy.id] };
+      }),
+      alignSelectedWidgets: (alignment) => set((s) => {
+        const changes = alignWidgets(s.current.widgets, s.selectedWidgetIds, alignment);
+        return changes.length ? recordLayout(s, { label: 'Align widgets', changes }) : {};
+      }),
+      undoLayout: () => set((s) => {
+        const edit = s.layoutPast[s.layoutPast.length - 1];
+        if (!edit) return {};
+        const redoEdit = { ...edit, changes: edit.changes.map((change) => !change.before && change.after ? { ...change, after: cloneScreen(s.current.widgets.find((w) => w.id === change.id) ?? change.after) } : change) };
+        return { current: { ...s.current, widgets: applyLayoutEdit(s.current.widgets, edit, true) }, layoutPast: s.layoutPast.slice(0, -1), layoutFuture: [...s.layoutFuture, redoEdit], selectedWidgetIds: [] };
+      }),
+      redoLayout: () => set((s) => {
+        const edit = s.layoutFuture[s.layoutFuture.length - 1];
+        if (!edit) return {};
+        return { current: { ...s.current, widgets: applyLayoutEdit(s.current.widgets, edit, false) }, layoutFuture: s.layoutFuture.slice(0, -1), layoutPast: [...s.layoutPast, edit], selectedWidgetIds: [] };
+      }),
 
-      removeWidget: (id) =>
-        set((s) => ({
-          current: {
-            ...s.current,
-            widgets: s.current.widgets.filter((w) => w.id !== id),
-          },
-        })),
+      addWidget: (type) => set((s) => {
+        const widget: WidgetInstance = {
+          id: newId(), type, position: { x: 80, y: 80 }, size: getDefaultSize(type),
+          zIndex: nextZIndex(s.current.widgets), config: cloneScreen(getDefaultConfig(type)),
+        };
+        return recordLayout(s, { label: 'Add widget', changes: [{ id: widget.id, after: widget }] });
+      }),
+
+      removeWidget: (id) => set((s) => {
+        const before = s.current.widgets.find((w) => w.id === id);
+        if (!before || before.locked) return {};
+        return { ...recordLayout(s, { label: 'Delete widget', changes: [{ id, before }] }), selectedWidgetIds: s.selectedWidgetIds.filter((item) => item !== id) };
+      }),
 
       updateWidgetPosition: (id, x, y) =>
         set((s) => ({
           current: {
             ...s.current,
             widgets: s.current.widgets.map((w) =>
-              w.id === id ? { ...w, position: { x, y } } : w,
+              w.id === id && !w.locked ? { ...w, position: { x, y } } : w,
             ),
           },
         })),
@@ -127,7 +194,7 @@ export const useAppStore = create<AppState & Actions>()(
           current: {
             ...s.current,
             widgets: s.current.widgets.map((w) =>
-              w.id === id ? { ...w, size: { width, height } } : w,
+              w.id === id && !w.locked ? { ...w, size: { width, height } } : w,
             ),
           },
         })),
@@ -230,6 +297,7 @@ export const useAppStore = create<AppState & Actions>()(
           const p = s.presets.find((p) => p.id === id);
           if (!p) return {};
           return {
+            layoutPast: [], layoutFuture: [], selectedWidgetIds: [],
             current: cloneScreen(p.state),
             activePresetId: id,
           };
@@ -255,9 +323,33 @@ export const useAppStore = create<AppState & Actions>()(
           ),
         })),
 
+      duplicatePreset: (id) => set((s) => {
+        const index = s.presets.findIndex((p) => p.id === id);
+        if (index < 0) return {};
+        const original = s.presets[index];
+        const names = new Set(s.presets.map((p) => p.name));
+        let name = `${original.name} (copy)`;
+        for (let n = 2; names.has(name); n++) name = `${original.name} (copy ${n})`;
+        const now = Date.now();
+        const copy = { ...original, id: newId(), name, state: cloneScreen(original.state), createdAt: now, updatedAt: now };
+        const presets = [...s.presets];
+        presets.splice(index + 1, 0, copy);
+        return { presets };
+      }),
+
+      movePreset: (id, direction) => set((s) => {
+        const index = s.presets.findIndex((p) => p.id === id);
+        const target = index + direction;
+        if (index < 0 || target < 0 || target >= s.presets.length) return {};
+        const presets = [...s.presets];
+        [presets[index], presets[target]] = [presets[target], presets[index]];
+        return { presets };
+      }),
+
       deletePreset: (id) =>
         set((s) => ({
           presets: s.presets.filter((p) => p.id !== id),
+          schedule: s.schedule.filter((rule) => rule.presetId !== id),
           activePresetId: s.activePresetId === id ? null : s.activePresetId,
         })),
 
@@ -281,6 +373,7 @@ export const useAppStore = create<AppState & Actions>()(
     }),
     {
       name: 'classroomscreen-state',
+      partialize: ({ layoutPast: _past, layoutFuture: _future, selectedWidgetIds: _selected, ...state }) => state,
       version: SCHEMA_VERSION,
     },
   ),

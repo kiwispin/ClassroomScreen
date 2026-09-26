@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import type { WidgetInstance } from '../store/types';
 import { getWidgetComponent, getWidgetMeta } from '../widgets/registry';
 import { getTheme } from '../lib/themes';
-import { normalizeGlassOpacity, withAlpha } from '../lib/widget-glass';
+import { normalizeGlassOpacity, supportsWidgetGlass, withAlpha } from '../lib/widget-glass';
 
 export default function WidgetTile({ instance }: { instance: WidgetInstance }) {
   const Component = getWidgetComponent(instance.type);
@@ -24,7 +24,7 @@ export default function WidgetTile({ instance }: { instance: WidgetInstance }) {
   }
 
   const glassEnabled =
-    (instance.type === 'timer' || instance.type === 'clock') && config.frostedGlass === true;
+    supportsWidgetGlass(instance.type) && config.frostedGlass === true;
   const glassOpacity = normalizeGlassOpacity(config.glassOpacity);
   const tileBackground = glassEnabled ? withAlpha(theme.bg, glassOpacity) : theme.bg;
 

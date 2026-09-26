@@ -1,3 +1,9 @@
+import type { WidgetType } from '../store/types';
+
+// Video fills its tile with an opaque player; the demo also paints its own background.
+export const supportsWidgetGlass = (type: WidgetType): boolean =>
+  type !== 'video' && type !== 'demo';
+
 export const DEFAULT_GLASS_OPACITY = 75;
 export const MIN_GLASS_OPACITY = 20;
 export const MAX_GLASS_OPACITY = 100;

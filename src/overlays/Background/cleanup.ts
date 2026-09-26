@@ -1,5 +1,6 @@
 import { keys, createStore } from 'idb-keyval';
 import { deleteImage } from './idb';
+import type { LayoutEdit } from '../../lib/layout-history';
 import type { AppState, ScreenState } from '../../store/types';
 
 const imageStore = createStore('classroomscreen', 'images');
@@ -26,11 +27,18 @@ const collectFromScreen = (scr: ScreenState, ids: Set<string>): void => {
 };
 
 export const collectReferencedImageIds = (
-  s: Pick<AppState, 'current' | 'presets'>,
+  s: Pick<AppState, 'current' | 'presets'> & { layoutPast?: LayoutEdit[]; layoutFuture?: LayoutEdit[] },
 ): Set<string> => {
   const ids = new Set<string>();
   collectFromScreen(s.current, ids);
   for (const p of s.presets) collectFromScreen(p.state, ids);
+  for (const edit of [...(s.layoutPast ?? []), ...(s.layoutFuture ?? [])]) {
+    for (const change of edit.changes) {
+      for (const widget of [change.before, change.after]) {
+        if (widget) collectFromScreen({ background: { kind: 'solid', color: '#ffffff' }, widgets: [widget] }, ids);
+      }
+    }
+  }
   return ids;
 };
 

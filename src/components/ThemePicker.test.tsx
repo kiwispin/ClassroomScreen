@@ -60,14 +60,14 @@ function ConnectedClockThemePicker() {
   );
 }
 
-describe('Color theme popover', () => {
+describe('Appearance panel', () => {
   beforeEach(() => {
     useAppStore.setState((state) => ({
       current: { ...state.current, widgets: [{ ...timer, config: { ...timer.config } }] },
     }));
   });
 
-  it('persists the opt-in and opacity, and closes after choosing a theme', async () => {
+  it('persists the opt-in and opacity, and stays open while choosing a theme', async () => {
     const user = userEvent.setup();
     render(<ConnectedThemePicker />);
     await user.click(screen.getByRole('button', { name: 'Color theme' }));
@@ -89,7 +89,10 @@ describe('Color theme popover', () => {
     await waitFor(() => expect(useAppStore.getState().current.widgets[0].config.glassOpacity).toBe(45));
 
     await user.click(screen.getByRole('button', { name: 'Sky' }));
-    await waitFor(() => expect(screen.queryByRole('button', { name: 'Sky' })).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Sky' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('dialog', { name: 'Appearance' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Close settings' }));
+    expect(screen.getByRole('button', { name: 'Color theme' })).toHaveFocus();
     expect(useAppStore.getState().current.widgets[0].config).toMatchObject({
       theme: 'sky',
       frostedGlass: true,

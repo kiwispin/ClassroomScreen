@@ -1,5 +1,5 @@
 import { Check, Palette } from 'lucide-react';
-import SettingsPopover from './SettingsPopover';
+import WidgetSettingsPanel, { SettingsSection, SettingsToggle } from './WidgetSettingsPanel';
 import { useAppStore } from '../store/store';
 import { THEMES } from '../lib/themes';
 import {
@@ -8,7 +8,6 @@ import {
   MIN_GLASS_OPACITY,
   normalizeGlassOpacity,
 } from '../lib/widget-glass';
-import { SettingsToggle } from './WidgetSettingsPanel';
 
 type Props = {
   instanceId: string;
@@ -22,14 +21,19 @@ export default function ThemePicker({ instanceId, currentTheme, glass }: Props) 
   const glassOpacity = normalizeGlassOpacity(glass?.opacity ?? DEFAULT_GLASS_OPACITY);
 
   return (
-    <SettingsPopover
-      trigger={(open) => (
+    <WidgetSettingsPanel
+      title="Appearance"
+      trigger={(toggle, open, panelId) => (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            open();
+            toggle();
           }}
           className="h-7 w-7 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors"
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-controls={panelId}
           aria-label="Color theme"
           title="Color theme"
         >
@@ -37,9 +41,9 @@ export default function ThemePicker({ instanceId, currentTheme, glass }: Props) 
         </button>
       )}
     >
-      {(close) => (
-        <div className="flex flex-col gap-2 w-[15rem]">
-          <div className="text-xs font-medium uppercase text-slate-500">Color theme</div>
+      {() => (
+        <>
+          <SettingsSection title="Colour theme">
           <div className="grid grid-cols-4 gap-1.5">
             {THEMES.map((t) => {
               const isActive = active === t.id;
@@ -48,10 +52,9 @@ export default function ThemePicker({ instanceId, currentTheme, glass }: Props) 
                   key={t.id}
                   onClick={() => {
                     updateConfig(instanceId, { theme: t.id });
-                    close();
                   }}
                   className={
-                    'relative rounded-lg p-1 border transition-all hover:scale-[1.04] ' +
+                    'relative min-w-0 rounded-lg p-1 border transition-all hover:scale-[1.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 ' +
                     (isActive
                       ? 'border-indigo-500 ring-2 ring-indigo-200'
                       : 'border-slate-200 hover:border-slate-300')
@@ -81,6 +84,7 @@ export default function ThemePicker({ instanceId, currentTheme, glass }: Props) 
                       </div>
                     </div>
                   </div>
+                  <span className="mt-1 block truncate text-xs text-slate-700">{t.name}</span>
                   {isActive && (
                     <div className="absolute -top-1 -right-1 bg-indigo-500 text-white rounded-full p-0.5 shadow">
                       <Check className="w-3 h-3" strokeWidth={3} />
@@ -90,8 +94,9 @@ export default function ThemePicker({ instanceId, currentTheme, glass }: Props) 
               );
             })}
           </div>
+          </SettingsSection>
           {glass && (
-            <div className="mt-1 border-t border-slate-200 pt-3">
+            <SettingsSection title="Background">
               <SettingsToggle
                 label="Frosted glass"
                 checked={glass.enabled}
@@ -114,10 +119,11 @@ export default function ThemePicker({ instanceId, currentTheme, glass }: Props) 
                   className="block h-2 w-full cursor-pointer accent-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </label>
-            </div>
+              <p className="text-xs text-slate-500">Increase opacity for clearer text over a busy background.</p>
+            </SettingsSection>
           )}
-        </div>
+        </>
       )}
-    </SettingsPopover>
+    </WidgetSettingsPanel>
   );
 }

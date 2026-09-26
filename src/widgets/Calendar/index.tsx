@@ -81,14 +81,14 @@ export default function Calendar({ instance }: { instance: WidgetInstance }) {
       style={{ containerType: 'size' as const }}
     >
       {showGrid ? (
-        <div className="h-full w-full flex flex-col text-slate-950">
+        <div className="h-full w-full flex flex-col">
           <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center px-[5cqi] pb-[3cqb] pt-[1cqb]">
             <button
               type="button"
               onClick={() =>
                 setViewMonth((cur) => new Date(cur.getFullYear(), cur.getMonth() - 1, 1))
               }
-              className="flex h-[clamp(24px,8cqmin,42px)] w-[clamp(24px,8cqmin,42px)] items-center justify-center rounded-full text-slate-950 hover:bg-slate-100"
+              className="flex h-[clamp(24px,8cqmin,42px)] w-[clamp(24px,8cqmin,42px)] items-center justify-center rounded-full text-current hover:bg-slate-400/20"
               aria-label="Previous month"
               title="Previous month"
             >
@@ -105,7 +105,7 @@ export default function Calendar({ instance }: { instance: WidgetInstance }) {
               onClick={() =>
                 setViewMonth((cur) => new Date(cur.getFullYear(), cur.getMonth() + 1, 1))
               }
-              className="ml-auto flex h-[clamp(24px,8cqmin,42px)] w-[clamp(24px,8cqmin,42px)] items-center justify-center rounded-full text-slate-950 hover:bg-slate-100"
+              className="ml-auto flex h-[clamp(24px,8cqmin,42px)] w-[clamp(24px,8cqmin,42px)] items-center justify-center rounded-full text-current hover:bg-slate-400/20"
               aria-label="Next month"
               title="Next month"
             >

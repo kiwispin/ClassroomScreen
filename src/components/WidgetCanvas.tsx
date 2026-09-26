@@ -42,18 +42,21 @@ type Props = { focusMode?: boolean };
 
 export default function WidgetCanvas({ focusMode = false }: Props) {
   const widgets = useAppStore((s) => s.current.widgets);
-  const updatePos = useAppStore((s) => s.updateWidgetPosition);
-  const updateSize = useAppStore((s) => s.updateWidgetSize);
+  const commitLayout = useAppStore((s) => s.commitWidgetLayout);
+  const snap = useAppStore((s) => s.snapToGrid);
+  const selected = useAppStore((s) => s.selectedWidgetIds);
+  const select = useAppStore((s) => s.selectWidget);
+  const clearSelection = useAppStore((s) => s.clearWidgetSelection);
   const focusWidget = useAppStore((s) => s.focusWidget);
 
   return (
-    <div className="absolute inset-0">
+    <div className="absolute inset-0" onMouseDown={(event) => { if (event.target === event.currentTarget) clearSelection(); }}>
       {widgets.map((w) => (
         <Rnd
           key={w.id}
           // Drop the `group` class in focus mode so chrome / handles / hover
           // ring don't react to mouseover.
-          className={focusMode ? '' : 'group'}
+          className={focusMode ? '' : `group ${selected.includes(w.id) ? 'outline outline-2 outline-indigo-500 rounded-xl' : ''}`}
           position={{ x: w.position.x, y: w.position.y }}
           size={{ width: w.size.width, height: w.size.height }}
           bounds="parent"
@@ -61,19 +64,25 @@ export default function WidgetCanvas({ focusMode = false }: Props) {
           minHeight={80}
           cancel="input,textarea,select,button,a,canvas"
           style={{ zIndex: w.zIndex }}
-          disableDragging={focusMode}
-          enableResizing={focusMode ? ENABLE_NONE : ENABLE_CORNERS_ONLY}
+          disableDragging={focusMode || w.locked}
+          dragGrid={snap ? [16, 16] : [1, 1]}
+          resizeGrid={snap ? [16, 16] : [1, 1]}
+          enableResizing={focusMode || w.locked ? ENABLE_NONE : ENABLE_CORNERS_ONLY}
           resizeHandleStyles={HANDLE_STYLES}
           resizeHandleClasses={HANDLE_CLASSES}
           onDragStart={() => focusWidget(w.id)}
-          onDragStop={(_e, d) => updatePos(w.id, d.x, d.y)}
+          onDragStop={(_e, d) => commitLayout(w.id, { x: d.x, y: d.y })}
           onResizeStop={(_e, _dir, ref, _delta, pos) => {
-            updateSize(w.id, ref.offsetWidth, ref.offsetHeight);
-            updatePos(w.id, pos.x, pos.y);
+            commitLayout(w.id, pos, { width: ref.offsetWidth, height: ref.offsetHeight });
           }}
         >
-          {!focusMode && <WidgetChrome instance={w} />}
-          <WidgetTile instance={w} />
+          <div className="h-full w-full" onMouseDownCapture={(event) => {
+            if (focusMode || w.locked || (event.target as HTMLElement).closest('button,input,textarea,select,a')) return;
+            select(w.id, event.shiftKey);
+          }}>
+            {!focusMode && <WidgetChrome instance={w} />}
+            <WidgetTile instance={w} />
+          </div>
         </Rnd>
       ))}
     </div>

@@ -32,8 +32,11 @@ describe('WidgetChrome glass controls', () => {
   it.each([
     { type: 'clock' as const, hasGlass: true },
     { type: 'timer' as const, hasGlass: true },
-    { type: 'stopwatch' as const, hasGlass: false },
-  ])('exposes glass only for $type', async ({ type, hasGlass }) => {
+    { type: 'stopwatch' as const, hasGlass: true },
+    { type: 'notepad' as const, hasGlass: true },
+    { type: 'qrcode' as const, hasGlass: true },
+    { type: 'video' as const, hasGlass: false },
+  ])('exposes appropriate glass controls for $type', async ({ type, hasGlass }) => {
     useAppStore.setState((state) => ({
       current: { ...state.current, widgets: [makeWidget(type)] },
     }));

@@ -22,6 +22,7 @@ export type WidgetInstance = {
   position: { x: number; y: number };
   size: { width: number; height: number };
   zIndex: number;
+  locked?: boolean;
   config: Record<string, unknown>;
 };
 
@@ -81,6 +82,8 @@ export type AppState = {
   toolbarHidden: boolean;
   schedule: ScheduleRule[];
   scheduleEnabled: boolean;
+  snapToGrid?: boolean;
+  toolbarWidgets?: WidgetType[];
 };
 
 export const DEFAULT_BACKGROUND: Background = {

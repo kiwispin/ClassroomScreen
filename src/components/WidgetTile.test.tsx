@@ -43,12 +43,12 @@ describe('WidgetTile backgrounds', () => {
     expect(renderedTile().style.opacity).toBe('');
   });
 
-  it('keeps legacy Timer configs opaque and ignores glass fields on unrelated widgets', () => {
+  it('keeps legacy Timer configs opaque and ignores glass fields on opaque video players', () => {
     const { rerender } = render(<WidgetTile instance={makeWidget('timer', { theme: 'midnight' })} />);
     expect(renderedTile().style.backgroundColor).toBe('rgb(15, 23, 42)');
     expect(renderedTile().style.backdropFilter).toBe('');
 
-    rerender(<WidgetTile instance={makeWidget('stopwatch', {
+    rerender(<WidgetTile instance={makeWidget('video', {
       theme: 'default',
       frostedGlass: true,
       glassOpacity: 50,
@@ -84,6 +84,15 @@ describe('WidgetTile backgrounds', () => {
     expect(renderedTile().style.backgroundColor).toBe('rgb(15, 23, 42)');
     expect(renderedTile().style.backdropFilter).toBe('');
   });
+
+  it.each(['stopwatch', 'notepad', 'namepicker', 'dice', 'trafficlight', 'worksymbols', 'calendar', 'noisemeter', 'qrcode', 'image', 'poll', 'timetable'] as const)(
+    'applies glass to %s without fading content', (type) => {
+      render(<WidgetTile instance={makeWidget(type, { theme: 'midnight', frostedGlass: true, glassOpacity: 75 })} />);
+      expect(renderedTile().style.backgroundColor).toBe('rgba(15, 23, 42, 0.75)');
+      expect(renderedTile().style.backdropFilter).toBe('blur(12px)');
+      expect(renderedTile().style.opacity).toBe('');
+    },
+  );
 
   it('clamps imported opacity and falls back for non-finite values', () => {
     const { rerender } = render(<WidgetTile instance={makeWidget('timer', {

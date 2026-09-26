@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import LayoutTools, { useLayoutShortcuts } from '../components/LayoutTools';
 import Toolbar from '../components/Toolbar';
+import PresetNavigation from '../components/PresetNavigation';
 import TopRightCluster from '../components/TopRightCluster';
 import WidgetCanvas from '../components/WidgetCanvas';
 import BackgroundLayer from '../overlays/Background';
@@ -11,6 +13,7 @@ import { useFullscreen } from '../lib/useFullscreen';
 import { useGlobalShortcuts } from '../lib/useGlobalShortcuts';
 
 export default function App() {
+  useLayoutShortcuts();
   const bg = useAppStore((s) => s.current.background);
   const toggleAnnotate = useAppStore((s) => s.toggleAnnotate);
   const annotateOpen = useAppStore((s) => s.annotateOpen);
@@ -53,6 +56,8 @@ export default function App() {
       <BackgroundLayer bg={bg} />
       <WidgetCanvas focusMode={focusMode} />
       {!focusMode && <Toolbar />}
+      {!focusMode && !annotateOpen && <LayoutTools />}
+      {!focusMode && <PresetNavigation />}
       {!focusMode && <TopRightCluster onOpenHelp={() => setHelpOpen(true)} />}
       <AnnotateOverlay />
       <HelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />

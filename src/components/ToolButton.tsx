@@ -1,4 +1,4 @@
-import { forwardRef, type MouseEvent } from 'react';
+import { forwardRef, useId, type MouseEvent } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
 type Props = {
@@ -8,6 +8,9 @@ type Props = {
   active?: boolean;
   iconColor?: string; // Tailwind text-* class for inactive state
   variant?: 'bar' | 'popover';
+  instanceCount?: number;
+  expanded?: boolean;
+  controls?: string;
   onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
 };
 
@@ -180,9 +183,10 @@ function AccentDetail({ label, color }: { label: string; color: string }) {
 }
 
 const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
-  { Icon, label, title, active, iconColor, variant = 'bar', onClick },
+  { Icon, label, title, active, iconColor, variant = 'bar', instanceCount, expanded, controls, onClick },
   ref,
 ) {
+  const descriptionId = useId();
   const compact = variant === 'popover';
   const iconSize = compact ? 'h-9 w-9' : 'h-8 w-8';
   const accent = active ? '#a5b4fc' : accentForColor(iconColor);
@@ -190,18 +194,25 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
   return (
     <button
       ref={ref}
+      type="button"
       onClick={onClick}
-      title={title ?? label}
+      aria-expanded={expanded}
+      aria-controls={controls}
+      aria-haspopup={expanded === undefined ? undefined : 'dialog'}
+      aria-describedby={instanceCount === undefined ? undefined : descriptionId}
+      title={(title ?? label) + (instanceCount ? ` (${instanceCount} on screen)` : '')}
       className={
-        'shrink-0 flex flex-col items-center justify-center rounded-2xl transition-colors ' +
+        'relative shrink-0 flex flex-col items-center justify-center rounded-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-indigo-500 ' +
         (compact
-          ? 'h-[98px] min-w-[84px] px-2 py-2 '
+          ? 'h-[98px] w-full min-w-0 px-2 py-2 '
           : 'h-[78px] min-w-[82px] px-2 py-2 ') +
         (active
           ? 'bg-indigo-50 text-indigo-600 ring-2 ring-slate-200'
           : 'text-slate-900 hover:bg-slate-50')
       }
     >
+      {instanceCount !== undefined && <span id={descriptionId} aria-hidden="true" className="sr-only">{instanceCount} on the current screen</span>}
+      {Boolean(instanceCount) && <span aria-hidden="true" className={instanceCount === 1 ? 'absolute right-3 top-2 h-1.5 w-1.5 rounded-full bg-slate-400' : 'absolute right-2 top-1 rounded-full bg-indigo-100 px-1.5 text-[10px] font-semibold text-indigo-700'}>{instanceCount === 1 ? null : instanceCount}</span>}
       <span className={'relative block ' + iconSize}>
         <AccentDetail label={label} color={accent} />
         <Icon
@@ -211,7 +222,7 @@ const ToolButton = forwardRef<HTMLButtonElement, Props>(function ToolButton(
       </span>
       <span
         className={
-          'mt-1.5 max-w-[82px] truncate text-center text-[13px] font-medium leading-tight ' +
+          'mt-1.5 max-w-full text-center text-[13px] font-medium leading-tight ' + (compact ? 'whitespace-normal ' : 'max-w-[82px] truncate whitespace-nowrap ') +
           (active ? 'text-indigo-600' : 'text-slate-700')
         }
       >

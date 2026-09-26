@@ -1,3 +1,4 @@
+import { widgetAssetIsShared } from '../../lib/widget-asset-references';
 import { useEffect, useRef, useState } from 'react';
 import { Music2, Play, Trash2, Upload, Volume2 } from 'lucide-react';
 import WidgetSettingsPanel, {
@@ -113,7 +114,7 @@ export default function TimerSettings({ instance }: WidgetSettingsProps) {
   };
 
   const removeCustom = async () => {
-    if (customId) {
+    if (customId && !widgetAssetIsShared(customId, 'audio', instance.id)) {
       try { await deleteAudio(customId); } catch { /* ignore */ }
     }
     updateConfig(instance.id, {
